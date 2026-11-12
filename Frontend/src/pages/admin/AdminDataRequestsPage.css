@@ -1,0 +1,14 @@
+/* src/pages/admin/AdminDataRequestsPage.css */
+.request-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-3); }
+.request-header { display: flex; justify-content: space-between; margin-bottom: var(--space-2); }
+.request-type-tag { background: var(--color-primary-light); color: var(--color-primary-dark); padding: 2px 10px; border-radius: 999px; font-size: var(--font-size-xs); font-weight: 700; }
+.request-status { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+.request-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.request-processed-note { color: var(--color-normal); font-size: var(--font-size-sm); }
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,6 @@
+/* src/pages/nurse/NursePatientListPage.css */
+.patient-card-list { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-3); }
+.patient-list-card { display: flex; justify-content: space-between; align-items: center; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); gap: var(--space-3); flex-wrap: wrap; }
+.patient-list-info { display: flex; gap: var(--space-3); align-items: flex-start; }
+.patient-hn, .patient-abnormal { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 2px 0; }
+.patient-list-actions { display: flex; gap: var(--space-2); }

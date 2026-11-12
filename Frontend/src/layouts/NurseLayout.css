@@ -1,0 +1,3 @@
+/* src/layouts/NurseLayout.css */
+.nurse-layout { min-height: 100vh; display: flex; flex-direction: column; }
+.nurse-layout-content { flex: 1; padding: var(--space-4); padding-bottom: 88px; max-width: 960px; margin: 0 auto; width: 100%; }

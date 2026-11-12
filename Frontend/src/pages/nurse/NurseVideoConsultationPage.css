@@ -1,0 +1,25 @@
+/* src/pages/nurse/NurseVideoConsultationPage.css */
+.nurse-video-page { display: flex; min-height: 100vh; }
+.nurse-video-main { flex: 2; background: #0d1f17; color: #fff; display: flex; flex-direction: column; }
+.video-status-bar-nurse { padding: var(--space-2) var(--space-4); font-size: var(--font-size-sm); background: rgba(0,0,0,0.3); }
+.video-mock-note { font-size: var(--font-size-xs); color: #ffb703; }
+.video-controls { display: flex; justify-content: center; gap: var(--space-3); padding: var(--space-4); background: rgba(0,0,0,0.4); }
+.control-btn { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); min-height: 48px; cursor: pointer; }
+.control-btn.off { background: rgba(255,255,255,0.05); opacity: 0.6; }
+.control-btn.danger { background: var(--color-danger); }
+.control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.nurse-video-sidebar { flex: 1; background: var(--color-surface); border-left: 1px solid var(--color-border); display: flex; flex-direction: column; max-width: 380px; }
+.sidebar-tabs { display: flex; border-bottom: 1px solid var(--color-border); }
+.sidebar-tabs button { flex: 1; padding: var(--space-3); border: none; background: none; cursor: pointer; }
+.sidebar-tabs button.active { border-bottom: 3px solid var(--color-primary); font-weight: 700; }
+.sidebar-content { padding: var(--space-4); overflow-y: auto; }
+.preconsult-list { list-style: none; padding: 0; font-size: var(--font-size-sm); }
+.preconsult-list li { padding: 4px 0; }
+.diagnosis-warning { font-size: var(--font-size-xs); color: var(--color-warning); background: var(--color-warning-bg); padding: var(--space-2); border-radius: var(--radius-sm); margin-top: var(--space-2); }
+
+/* --- Agora video stage --- */
+.agora-stage { position: relative; flex: 1; min-height: 360px; background: #000; overflow: hidden; }
+.agora-remote { position: absolute; inset: 0; width: 100%; height: 100%; }
+.agora-local { position: absolute; right: 16px; bottom: 16px; width: 180px; height: 135px; border-radius: var(--radius-md); overflow: hidden; background: #1b1b1b; border: 2px solid rgba(255,255,255,0.35); z-index: 5; }
+.agora-overlay { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: var(--space-4); background: rgba(13,31,23,0.85); text-align: center; }
+.agora-warning { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 6; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: rgba(184,134,11,0.92); color: #fff; font-size: var(--font-size-sm); }

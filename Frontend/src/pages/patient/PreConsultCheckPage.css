@@ -1,0 +1,8 @@
+/* src/pages/patient/PreConsultCheckPage.css */
+.precheck-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--space-4); background: var(--color-bg-soft); }
+.precheck-card { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-6); max-width: 480px; width: 100%; box-shadow: var(--shadow-md); }
+.device-check-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); gap: var(--space-2); }
+.device-status-text { font-weight: 600; }
+.status-ready .device-status-text { color: var(--color-normal); }
+.status-failed .device-status-text { color: var(--color-danger); }
+.status-checking .device-status-text { color: var(--color-text-muted); }

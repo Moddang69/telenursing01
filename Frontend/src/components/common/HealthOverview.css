@@ -1,0 +1,4 @@
+.health-overview-tabs { margin: var(--space-3) 0; overflow-x: auto; flex-wrap: nowrap; }
+.health-overview-tabs .tab-btn { white-space: nowrap; }
+.health-overview .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-3); }
+@media (max-width: 480px) { .health-overview .dashboard-grid { grid-template-columns: 1fr; } }

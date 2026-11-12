@@ -1,0 +1,8 @@
+/* src/pages/nurse/NurseHistoryPage.css */
+.history-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-3); }
+.history-header { display: flex; justify-content: space-between; margin-bottom: var(--space-2); font-size: var(--font-size-sm); color: var(--color-text-muted); }
+.analytics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); margin: var(--space-4) 0 var(--space-6); }
+@media (min-width: 768px) { .analytics-grid { grid-template-columns: repeat(5, 1fr); } }
+.analytics-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); display: flex; flex-direction: column; gap: 4px; }
+.analytics-value { font-size: 28px; font-weight: 700; color: var(--color-primary-dark); }
+.analytics-label { font-size: var(--font-size-xs); color: var(--color-text-muted); }

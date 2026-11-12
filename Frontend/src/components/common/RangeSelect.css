@@ -1,0 +1,60 @@
+.range-select {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  min-width: 0;
+}
+.range-select legend { padding: 0; margin-bottom: var(--space-2); }
+.range-select-optional { color: var(--color-text-muted); font-weight: 400; }
+
+.range-select-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.range-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-left-width: 6px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  min-height: 48px;
+}
+.range-option input[type='radio'] {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+}
+.range-option:focus-within { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+.range-option-normal { border-left-color: var(--color-normal); }
+.range-option-warning { border-left-color: var(--color-warning); }
+.range-option-high { border-left-color: var(--color-high); }
+.range-option-critical { border-left-color: var(--color-danger); }
+
+.range-option.selected {
+  border-color: var(--color-primary);
+  border-left-width: 6px;
+  background: var(--color-primary-light);
+}
+
+.range-option-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.range-option-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.range-option-value { font-size: var(--font-size-base); }
+.range-option-unit { font-size: var(--font-size-xs); font-weight: 400; color: var(--color-text-muted); }
+.range-option-meaning { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+
+.range-select-clear {
+  margin-top: var(--space-2);
+  background: none;
+  border: 0;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  min-height: 32px;
+}
+.range-select-error .range-option { border-color: var(--color-danger); }

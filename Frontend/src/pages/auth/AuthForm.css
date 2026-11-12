@@ -1,0 +1,108 @@
+.auth-card-wide {
+  max-width: 560px;
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-3);
+}
+.form-row .form-group {
+  flex: 1;
+}
+
+.role-fieldset {
+  border: none;
+  padding: 0;
+}
+.role-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  min-height: 48px;
+}
+.role-option.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.role-option input {
+  width: 20px;
+  height: 20px;
+}
+
+.otp-input {
+  font-size: 24px;
+  letter-spacing: 8px;
+  text-align: center;
+}
+
+.otp-timer {
+  margin: var(--space-3) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+.text-danger {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.btn-full {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.mock-hint {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-soft);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+.care-team-box {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+  text-align: left;
+}
+.section-subheading {
+  font-size: var(--font-size-base);
+  color: var(--color-primary-dark);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+/* เพิ่มท้าย src/pages/auth/AuthForm.css */
+.verification-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-soft);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  margin: var(--space-3) 0;
+}
+/* เพิ่มท้าย src/pages/auth/AuthForm.css */
+.policy-link-strong {
+  color: #1a56db;
+  font-weight: 700;
+  text-decoration: underline;
+}
+/* เพิ่มท้าย src/pages/auth/AuthForm.css */
+.nurse-select-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.nurse-select-option {
+  display: flex; align-items: center; gap: var(--space-3);
+  border: 2px solid var(--color-border); border-radius: var(--radius-md);
+  padding: var(--space-3); cursor: pointer;
+}
+.nurse-select-option.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.nurse-select-option input { width: 20px; height: 20px; }
+.nurse-select-option p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 2px 0 0; }

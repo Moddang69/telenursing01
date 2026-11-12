@@ -1,0 +1,5 @@
+/* src/pages/nurse/NurseProfilePage.css */
+.profile-section { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-4); }
+.care-code-box { display: flex; align-items: center; gap: var(--space-3); background: var(--color-primary-light); padding: var(--space-3); border-radius: var(--radius-md); }
+.care-code-text { font-family: monospace; font-size: var(--font-size-lg); font-weight: 700; color: var(--color-primary-dark); }
+.care-code-note { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: var(--space-2); }

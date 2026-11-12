@@ -1,0 +1,51 @@
+/* src/components/common/Header.css */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.app-header-title {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary-dark);
+  margin: 0;
+}
+.app-header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.header-icon-btn {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 20px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.header-icon-btn:hover,
+.header-icon-btn.active {
+  background: var(--color-bg-soft);
+}
+.header-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 10px;
+  border-radius: 999px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

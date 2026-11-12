@@ -1,0 +1,14 @@
+/* src/layouts/PatientLayout.css */
+.patient-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.patient-layout-content {
+  flex: 1;
+  padding: var(--space-4);
+  padding-bottom: 88px; /* space for bottom nav */
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}

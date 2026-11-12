@@ -1,0 +1,18 @@
+/* src/pages/patient/PatientHomePage.css */
+.home-section { margin-bottom: var(--space-5); }
+.home-section h2 { font-size: var(--font-size-base); margin-bottom: var(--space-2); }
+.appointment-card {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.appointment-date { font-weight: 700; font-size: var(--font-size-lg); color: var(--color-primary-dark); }
+.appointment-status { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: var(--space-2) 0; }
+.mini-history-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.mini-history-list li {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+}

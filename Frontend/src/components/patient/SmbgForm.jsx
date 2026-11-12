@@ -1,0 +1,106 @@
+import React, { useState } from 'react';
+import { healthService } from '../../services/healthService.js';
+import { validators } from '../../utils/validators.js';
+import { useNotification } from '../../context/NotificationContext.jsx';
+import RangeSelect from '../common/RangeSelect.jsx';
+import { HEALTH_RANGES, METRIC_UNITS } from '../../constants/healthRanges.js';
+import './HealthForms.css';
+
+const SMBG_TYPES = [
+  { value: 'fasting', label: 'ก่อนอาหารเช้า / งดอาหาร (Fasting)' },
+  { value: 'before_meal', label: 'ก่อนอาหาร' },
+  { value: 'after_meal', label: 'หลังอาหาร' },
+  { value: 'bedtime', label: 'ก่อนนอน' },
+  { value: 'other', label: 'อื่นๆ' },
+];
+
+const newForm = () => ({
+  rangeKey: '',
+  type: 'fasting',
+  date: new Date().toISOString().slice(0, 10),
+  time: new Date().toTimeString().slice(0, 5),
+});
+
+export default function SmbgForm({ patientId, recordedBy = 'patient', recordedByName, onSaved } = {}) {
+  const { showToast } = useNotification();
+  const [form, setForm] = useState(newForm());
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = {
+      rangeKey: form.rangeKey ? '' : 'กรุณาเลือกช่วงระดับน้ำตาลในเลือด',
+      date: validators.required(form.date, 'วันที่'),
+      time: validators.required(form.time, 'เวลา'),
+    };
+    setErrors(newErrors);
+    if (Object.values(newErrors).some(Boolean)) return;
+
+    setIsSubmitting(true);
+    try {
+      await healthService.addSmbg(form, patientId);
+      showToast(
+        recordedBy === 'caregiver'
+          ? `บันทึกข้อมูลสำเร็จ (โดยผู้ดูแล${recordedByName ? ` ${recordedByName}` : ''})`
+          : 'บันทึกข้อมูลสำเร็จ',
+        'success'
+      );
+      setForm(newForm());
+      if (onSaved) onSaved();
+    } catch (err) {
+      showToast(err?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form className="health-form" onSubmit={handleSubmit} noValidate>
+      <h3>บันทึกระดับน้ำตาลในเลือด (SMBG)</h3>
+
+      <RangeSelect
+        id="smbg-range"
+        label="เลือกช่วงระดับน้ำตาลในเลือดที่วัดได้"
+        options={HEALTH_RANGES.smbg}
+        unit={METRIC_UNITS.smbg}
+        value={form.rangeKey}
+        onChange={(rangeKey) => setForm((f) => ({ ...f, rangeKey }))}
+        error={errors.rangeKey}
+      />
+
+      <div className="form-group">
+        <label htmlFor="smbg-type" className="form-label">ประเภทการตรวจ</label>
+        <select
+          id="smbg-type"
+          className="form-input"
+          value={form.type}
+          onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+        >
+          {SMBG_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="smbg-date" className="form-label">วันที่</label>
+          <input id="smbg-date" type="date" className="form-input" value={form.date}
+            onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
+          {errors.date && <span className="form-error-message">{errors.date}</span>}
+        </div>
+        <div className="form-group">
+          <label htmlFor="smbg-time" className="form-label">เวลา</label>
+          <input id="smbg-time" type="time" className="form-input" value={form.time}
+            onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))} />
+          {errors.time && <span className="form-error-message">{errors.time}</span>}
+        </div>
+      </div>
+
+      <button type="submit" className="btn-primary btn-large" disabled={isSubmitting}>
+        {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
+      </button>
+    </form>
+  );
+}

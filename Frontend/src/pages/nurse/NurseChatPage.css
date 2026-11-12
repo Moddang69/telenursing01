@@ -1,0 +1,24 @@
+/* src/pages/nurse/NurseChatPage.css — รายการแชท + ห้องแชทของพยาบาล */
+.nurse-chat-list h2 { margin-top: 0; }
+.nurse-chat-rows { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.nurse-chat-row { display: flex; align-items: center; gap: var(--space-3); width: 100%; padding: var(--space-3); text-align: left; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; font: inherit; color: inherit; }
+.nurse-chat-row:hover { background: var(--color-bg-soft); }
+.nurse-chat-row.unread .nurse-chat-name { font-weight: 800; }
+.nurse-chat-row.unread .nurse-chat-preview { color: inherit; font-weight: 600; }
+
+.nurse-chat-avatar { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.nurse-chat-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nurse-chat-name { font-weight: 700; }
+.nurse-chat-preview { font-size: var(--font-size-sm); color: var(--color-text-muted, #666); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nurse-chat-meta { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.nurse-chat-time { font-size: var(--font-size-xs); color: var(--color-text-muted, #777); }
+.nurse-chat-badge { min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: var(--color-danger, #d32f2f); color: #fff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+
+.nurse-chat-room-header { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.nurse-chat-back { flex: 0 0 auto; width: 40px; height: 40px; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); font-size: 20px; line-height: 1; cursor: pointer; }
+.nurse-chat-patient-link { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-1) var(--space-2); border: none; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; border-radius: var(--radius-sm); }
+.nurse-chat-patient-link:hover { background: var(--color-bg-soft); }
+.nurse-chat-patient-name { font-size: var(--font-size-lg, 1.15rem); font-weight: 800; color: var(--color-primary); text-decoration: underline; text-underline-offset: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nurse-chat-patient-hn { font-size: var(--font-size-xs); color: var(--color-text-muted, #777); white-space: nowrap; }
+.nurse-chat-chevron { color: var(--color-primary); font-size: 1.3rem; }

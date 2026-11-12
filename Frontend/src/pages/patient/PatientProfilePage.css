@@ -1,0 +1,78 @@
+/* src/pages/patient/PatientProfilePage.css */
+.profile-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.profile-section h2 { font-size: var(--font-size-base); margin-top: 0; color: var(--color-primary-dark); }
+.setting-row { margin-bottom: var(--space-3); }
+.setting-options { display: flex; gap: var(--space-2); margin-top: var(--space-1); }
+.setting-btn {
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  min-height: 44px;
+}
+.setting-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 700; }
+.btn-danger-outline {
+  border: 2px solid var(--color-danger);
+  color: var(--color-danger);
+  background: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-height: 48px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.deletion-note, .deletion-success { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.deletion-success { color: var(--color-normal); }
+/* เพิ่มท้าย src/pages/patient/PatientProfilePage.css */
+.permission-list { list-style: none; padding: 0; }
+.permission-list li { padding: var(--space-1) 0; font-size: var(--font-size-sm); }
+
+/* เพิ่มท้าย src/pages/patient/PatientProfilePage.css */
+.info-detail-table { width: 100%; border-collapse: collapse; }
+.info-detail-table td { padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-sm); vertical-align: top; }
+.info-label { color: var(--color-text-muted); width: 40%; font-weight: 600; }
+.info-edit-note { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: var(--space-3); }
+
+.pending-request-note {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-3);
+}
+
+.category-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.category-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+.category-checkbox-row input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.modal-warning-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}

@@ -1,0 +1,15 @@
+.health-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.health-form h3 {
+  margin-top: 0;
+  color: var(--color-primary-dark);
+}
+.mini-history-section h4 {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

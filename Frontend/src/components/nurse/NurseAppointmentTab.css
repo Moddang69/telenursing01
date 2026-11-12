@@ -1,0 +1,9 @@
+/* src/components/nurse/NurseAppointmentTab.css */
+.existing-appointment-note {
+  background: var(--color-warning-bg); color: var(--color-warning);
+  padding: var(--space-3); border-radius: var(--radius-md); margin-bottom: var(--space-4); font-size: var(--font-size-sm);
+}
+.due-date-display {
+  background: var(--color-primary-light); color: var(--color-primary-dark);
+  padding: var(--space-3); border-radius: var(--radius-md); font-weight: 700;
+}

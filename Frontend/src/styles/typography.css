@@ -1,0 +1,29 @@
+body,
+input,
+button,
+textarea,
+select {
+  font-family: 'Sarabun', -apple-system, sans-serif;
+}
+
+body {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+h1 {
+  font-size: var(--font-size-xl);
+}
+h2 {
+  font-size: var(--font-size-lg);
+}
+
+/* Visible focus state — Accessibility requirement */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}

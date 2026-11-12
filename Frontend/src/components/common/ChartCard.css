@@ -1,0 +1,30 @@
+.chart-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: var(--space-4);
+}
+.chart-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);
+}
+.chart-range-tabs { display: flex; gap: var(--space-1); }
+.chart-range-btn {
+  border: 1px solid var(--color-border); background: var(--color-bg-soft);
+  border-radius: var(--radius-sm); padding: 4px 10px; font-size: var(--font-size-xs);
+  cursor: pointer; min-height: 32px;
+}
+.chart-range-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.chart-svg { width: 100%; height: auto; max-height: 300px; }
+.chart-grid-line { stroke: var(--color-border); stroke-width: 1; stroke-dasharray: 4 4; }
+.chart-axis-line { stroke: var(--color-text-muted); stroke-width: 1.5; }
+.chart-axis-label { font-size: 11px; fill: var(--color-text-muted); font-weight: 600; }
+.chart-axis-label-x { font-size: 11px; fill: var(--color-text-muted); font-weight: 600; }
+.chart-point-label { font-size: 13px; fill: var(--color-primary-dark); font-weight: 700; }
+.chart-minmax {
+  display: flex; justify-content: space-between; font-size: var(--font-size-sm);
+  color: var(--color-text-muted); margin-top: var(--space-2); font-weight: 600;
+}
+.chart-empty { color: var(--color-text-muted); text-align: center; padding: var(--space-4) 0; }
+.chart-axis-title { font-size: 12px; fill: var(--color-text); font-weight: 700; }
+.chart-direction-note { margin: var(--space-1) 0 0; text-align: center; font-size: var(--font-size-xs); color: var(--color-text-muted); }
