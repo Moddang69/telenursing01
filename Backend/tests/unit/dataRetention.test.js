@@ -76,7 +76,7 @@ describe('Data Retention', () => {
 
   test('Message/AuditLog เก็บ 90 วัน, VideoSession เก็บ 31 วัน', async () => {
     await insertRaw(Message, [{ _id: oid(), sentAt: ago(91) }, { _id: oid(), sentAt: ago(89) }]);
-    await insertRaw(VideoSession, [{ _id: oid(), createdAt: ago(32) }, { _id: oid(), createdAt: ago(30) }]);
+    await insertRaw(VideoSession, [{ _id: oid(), appointmentId: oid(), createdAt: ago(32) }, { _id: oid(), appointmentId: oid(), createdAt: ago(30) }]);
     await insertRaw(AuditLog, [{ _id: oid(), createdAt: ago(91) }, { _id: oid(), createdAt: ago(89) }]);
 
     await purgeExpiredData({ now: NOW });

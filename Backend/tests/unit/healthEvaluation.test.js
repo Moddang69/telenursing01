@@ -14,8 +14,8 @@ describe('healthEvaluation.service.js — เลือกค่าเป็น�
     expect(r.data.smbg.value).toBe(84.5);
   });
 
-  test('SMBG 126 – 249 ควรได้ HIGH, 250 ขึ้นไป ควรได้ CRITICAL', () => {
-    expect(healthEvaluationService.evaluateSmbg({ rangeKey: 'glu_126_249' }).severity).toBe('HIGH');
+  test('SMBG 126 – 249 ควรได้ WARNING, 250 ขึ้นไป ควรได้ CRITICAL', () => {
+    expect(healthEvaluationService.evaluateSmbg({ rangeKey: 'glu_126_249' }).severity).toBe('WARNING');
     expect(healthEvaluationService.evaluateSmbg({ rangeKey: 'glu_gte250' }).severity).toBe('CRITICAL');
   });
 

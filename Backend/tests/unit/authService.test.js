@@ -11,6 +11,13 @@ describe('auth.service.js — Unit Tests', () => {
     phone: '0800000000',
   };
 
+ beforeEach(async () => {
+    await User.createCollection();
+    await Patient.createCollection();
+    await User.init();
+    await Patient.init();
+  }); 
+
   test('registerUser: ควรสร้าง User + Patient Profile พร้อมกัน (Transaction)', async () => {
     const result = await authService.registerUser({
       email: 'unit.test1@example.com',
