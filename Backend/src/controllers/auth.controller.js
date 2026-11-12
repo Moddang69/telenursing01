@@ -2,6 +2,8 @@ import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import authService from '../services/auth.service.js';
 import otpService from '../services/otp.service.js';
+import { isMailConfigured, sendOtpEmail } from '../services/mail.service.js';
+import { env } from '../config/env.js';
 import { logAudit } from '../middleware/auditLogger.js';
 import { User } from '../models/index.js';
 
@@ -113,10 +115,25 @@ export const requestOtp = asyncHandler(async (req, res) => {
 
   const result = await otpService.createOtp({ email, purpose });
 
+  // ส่ง OTP ทางอีเมลจริง — ห้ามส่งรหัสกลับใน response ยกเว้นโหมดพัฒนาที่ยังไม่ได้ตั้งค่าอีเมล (และ Production บังคับตั้งค่าอีเมลที่ env.js)
+  const devMode = env.NODE_ENV !== 'production' && !isMailConfigured();
+  if (!devMode) {
+    try {
+      await sendOtpEmail({ to: email, otpCode: result.otpCode, purpose, expiresInSeconds: result.expiresInSeconds });
+    } catch (err) {
+      console.error('ส่งอีเมล OTP ไม่สำเร็จ: - auth.controller.js:124', err.message);
+      throw new ApiError(503, 'ส่งอีเมล OTP ไม่สำเร็จ กรุณาลองใหม่อีกครั้งภายหลัง');
+    }
+  }
+
   res.status(200).json({
     success: true,
-    message: 'ส่ง OTP สำเร็จ',
-    data: { otpId: result.otpId, expiresInSeconds: result.expiresInSeconds, devOnlyOtpCode: result.otpCode },
+    message: devMode ? 'ส่ง OTP สำเร็จ (โหมดพัฒนา)' : 'ส่ง OTP ไปที่อีเมลของท่านแล้ว',
+    data: {
+      otpId: result.otpId,
+      expiresInSeconds: result.expiresInSeconds,
+      ...(devMode ? { devOnlyOtpCode: result.otpCode } : {}),
+    },
   });
 });
 
@@ -141,13 +158,7 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
   // Business Rule: ต้องยืนยัน OTP (purpose=FORGOT_PASSWORD) สำเร็จมาก่อนเท่านั้น
   // ตรวจจาก Otp collection ว่ามี record verified=true ล่าสุดหรือไม่
   const { Otp } = await import('../models/index.js');
-  // ต้องยังไม่หมดอายุด้วย: เอกสาร OTP ถูกเก็บ 90 วัน ไม่ได้ถูกลบตอนหมดอายุแล้ว (เดิมพึ่ง TTL Index)
-  const verifiedOtp = await Otp.findOne({
-    email,
-    purpose: 'FORGOT_PASSWORD',
-    verified: true,
-    expiresAt: { $gt: new Date() },
-  }).sort({ createdAt: -1 });
+  const verifiedOtp = await Otp.findOne({ email, purpose: 'FORGOT_PASSWORD', verified: true }).sort({ createdAt: -1 });
   if (!verifiedOtp) {
     throw new ApiError(400, 'กรุณายืนยัน OTP ก่อนตั้งรหัสผ่านใหม่');
   }
