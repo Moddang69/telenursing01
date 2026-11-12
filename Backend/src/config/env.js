@@ -33,12 +33,33 @@ export const env = {
   AGORA_TOKEN_TTL_SECONDS: Number(process.env.AGORA_TOKEN_TTL_SECONDS) || 3600,
   // Web Push (แจ้งเตือนแม้ไม่ได้เปิดเว็บ) — ไม่บังคับ: ถ้าไม่ตั้งค่า ระบบยังแจ้งเตือนในแอปได้ตามปกติ แต่จะไม่ส่ง Push
   // สร้างคีย์ด้วย: node src/scripts/generateVapidKeys.js   (VAPID_PRIVATE_KEY เป็นความลับ ห้าม commit)
-  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || 'BFgH4oL7343VDK7aznX0KX3-yWUebLxY4cEzRJtS0RQGlReU7BB0c5VrWLgKNzfCIj82StfTuu7i_KGxpg6doF8',
-  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || 'g3o_VtVIi_W4OmoMLC3dosfd8B33uqY58NKyV_XCh_Q',
+  // ห้ามฝังคีย์เป็นค่า default ในโค้ด — ถ้าไม่ตั้งค่า ระบบแค่ปิด Web Push
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || 'mailto:admin@telenursing.local',
   // อายุการเก็บข้อมูล (Data Retention) — ตัวตั้งเวลาลบข้อมูลที่หมดอายุอัตโนมัติ (ดู constants/retention.js)
   // ปิดได้ด้วย RETENTION_PURGE_ENABLED=false / ปรับความถี่ด้วย RETENTION_PURGE_INTERVAL_MINUTES (ค่าเริ่มต้น 60 นาที)
   // ปรับจำนวนวันรายประเภทได้ด้วย RETENTION_DAYS_<ชื่อโมเดลแบบ SNAKE_CASE> เช่น RETENTION_DAYS_HEALTH_RECORD=60
+  // อีเมลส่ง OTP (SMTP) — บังคับตั้งค่าเมื่อ NODE_ENV=production (ดูด้านล่าง)
+  MAIL_HOST: process.env.MAIL_HOST || '',
+  MAIL_PORT: Number(process.env.MAIL_PORT) || 587,
+  MAIL_SECURE: process.env.MAIL_SECURE === 'true', // true = SSL ตรง (พอร์ต 465), false = STARTTLS (พอร์ต 587)
+  MAIL_USER: process.env.MAIL_USER || '',
+  MAIL_PASS: process.env.MAIL_PASS || '',
+  MAIL_FROM: process.env.MAIL_FROM || '', // เช่น "TeleNursing <no-reply@yourdomain.com>"
   RETENTION_PURGE_ENABLED: process.env.RETENTION_PURGE_ENABLED !== 'false',
   RETENTION_PURGE_INTERVAL_MINUTES: Number(process.env.RETENTION_PURGE_INTERVAL_MINUTES) || 60,
 };
+
+// ---------- ตรวจความพร้อมสำหรับ Production (Fail Fast) ----------
+if (env.NODE_ENV === 'production') {
+  const problems = [];
+  if (env.JWT_SECRET.length < 32) problems.push('JWT_SECRET ต้องยาวอย่างน้อย 32 ตัวอักษร (สุ่มด้วย crypto)');
+  for (const key of ['MAIL_HOST', 'MAIL_USER', 'MAIL_PASS', 'MAIL_FROM']) {
+    if (!env[key]) problems.push(`${key} ยังไม่ได้ตั้งค่า (จำเป็นสำหรับส่ง OTP ทางอีเมล)`);
+  }
+  if (/localhost|127\.0\.0\.1/.test(env.FRONTEND_ORIGIN)) problems.push('FRONTEND_ORIGIN ยังชี้ไป localhost');
+  if (problems.length) {
+    throw new Error(`[ENV ERROR] ตั้งค่า Production ไม่ครบ:\n - ${problems.join('\n - ')}`);
+  }
+}

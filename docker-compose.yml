@@ -1,55 +1,76 @@
-version: '3.9'
-
+# TeleNursing — Production (VPS เครื่องเดียว): Caddy (HTTPS อัตโนมัติ) + Frontend + Backend
+# ฐานข้อมูลใช้ MongoDB Atlas (ใส่ MONGO_URI ใน .env) — ไม่รัน MongoDB ใน compose
+#   เหตุผล: ระบบใช้ Transaction (สมัครสมาชิก/Care Team) ซึ่งต้องใช้ MongoDB แบบ Replica Set; Atlas เป็น Replica Set อยู่แล้ว
+# วิธีใช้: คัดลอก .env.example เป็น .env แล้วกรอกค่า → docker compose up -d --build
 services:
-  mongodb:
-    image: mongo:7
-    container_name: telenursing-mongodb
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: telenursing_prototype_db
-    volumes:
-      - mongo_data:/data/db
-    ports:
-      - '27017:27017'
-    networks:
-      - telenursing-net
-
   backend:
     build:
-      context: ./backend
+      context: ./Backend
       dockerfile: Dockerfile
     container_name: telenursing-backend
     restart: unless-stopped
-    depends_on:
-      - mongodb
     environment:
       NODE_ENV: production
       PORT: 5000
-      MONGO_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/telenursing_prototype_db?authSource=admin
-      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: ${MONGO_URI:?กรุณาตั้ง MONGO_URI ใน .env}
+      JWT_SECRET: ${JWT_SECRET:?กรุณาตั้ง JWT_SECRET ใน .env}
       JWT_EXPIRES_IN: 30m
-      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
+      FRONTEND_ORIGIN: https://${DOMAIN:?กรุณาตั้ง DOMAIN ใน .env}
       BCRYPT_SALT_ROUNDS: 12
-    ports:
-      - '5000:5000'
+      AGORA_APP_ID: ${AGORA_APP_ID:?กรุณาตั้ง AGORA_APP_ID ใน .env}
+      AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE:?กรุณาตั้ง AGORA_APP_CERTIFICATE ใน .env}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@localhost}
+      MAIL_HOST: ${MAIL_HOST:?กรุณาตั้ง MAIL_HOST ใน .env}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_SECURE: ${MAIL_SECURE:-false}
+      MAIL_USER: ${MAIL_USER:?กรุณาตั้ง MAIL_USER ใน .env}
+      MAIL_PASS: ${MAIL_PASS:?กรุณาตั้ง MAIL_PASS ใน .env}
+      MAIL_FROM: ${MAIL_FROM:?กรุณาตั้ง MAIL_FROM ใน .env}
+    expose:
+      - '5000' # เข้าถึงได้เฉพาะภายใน network ผ่าน Caddy เท่านั้น ไม่เปิดพอร์ตออกเครื่อง
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://localhost:5000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     networks:
       - telenursing-net
 
   frontend:
     build:
-      context: ./frontend
+      context: ./Frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+        # ใช้โดเมนเดียวกัน — Caddy ส่ง /api และ /socket.io ไปที่ backend
+        VITE_API_BASE_URL: https://${DOMAIN}/api
+        VITE_SOCKET_URL: https://${DOMAIN}
     container_name: telenursing-frontend
+    restart: unless-stopped
+    expose:
+      - '80'
+    networks:
+      - telenursing-net
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: telenursing-caddy
     restart: unless-stopped
     depends_on:
       - backend
+      - frontend
+    environment:
+      DOMAIN: ${DOMAIN}
     ports:
       - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # เก็บใบรับรอง HTTPS — ห้ามลบ ไม่งั้นต้องขอใหม่และอาจติดลิมิต Let's Encrypt
+      - caddy_config:/config
     networks:
       - telenursing-net
 
@@ -58,4 +79,5 @@ networks:
     driver: bridge
 
 volumes:
-  mongo_data:
+  caddy_data:
+  caddy_config:

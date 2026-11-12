@@ -116,12 +116,16 @@ export const requestOtp = asyncHandler(async (req, res) => {
   const result = await otpService.createOtp({ email, purpose });
 
   // ส่ง OTP ทางอีเมลจริง — ห้ามส่งรหัสกลับใน response ยกเว้นโหมดพัฒนาที่ยังไม่ได้ตั้งค่าอีเมล (และ Production บังคับตั้งค่าอีเมลที่ env.js)
-  const devMode = env.NODE_ENV !== 'production' && !isMailConfigured();
-  if (!devMode) {
+  // NODE_ENV=test ไม่ส่งอีเมลเสมอ (กัน .env ที่มี MAIL_* ทำให้เทสต์ส่งอีเมลจริง / ไม่ได้ devOnlyOtpCode)
+  const devMode = env.NODE_ENV === 'test' || (env.NODE_ENV !== 'production' && !isMailConfigured());
+  if (devMode) {
+    // โหมดพัฒนา: ไม่มีการส่งอีเมล — พิมพ์รหัสที่หน้าต่าง Terminal ของ Backend (หน้าเว็บไม่ได้แสดงรหัสนี้)
+    if (env.NODE_ENV !== 'test - auth.controller.js:123') console.log(`🔑 [DEV OTP] ${email} (${purpose}): ${result.otpCode}  — ยังไม่ได้ตั้งค่า MAIL_* จึงไม่ได้ส่งอีเมล`);
+  } else {
     try {
       await sendOtpEmail({ to: email, otpCode: result.otpCode, purpose, expiresInSeconds: result.expiresInSeconds });
     } catch (err) {
-      console.error('ส่งอีเมล OTP ไม่สำเร็จ: - auth.controller.js:124', err.message);
+      console.error('ส่งอีเมล OTP ไม่สำเร็จ: - auth.controller.js:128', err.message);
       throw new ApiError(503, 'ส่งอีเมล OTP ไม่สำเร็จ กรุณาลองใหม่อีกครั้งภายหลัง');
     }
   }

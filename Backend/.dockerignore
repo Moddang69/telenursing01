@@ -6,3 +6,8 @@ npm-debug.log
 tests
 coverage
 *.md
+
+dist
+.env.*
+.git
+*.log

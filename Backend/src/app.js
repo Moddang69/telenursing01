@@ -15,6 +15,9 @@ import { env } from './config/env.js';
 
 const app = express();
 
+// อยู่หลัง Reverse Proxy (Caddy/Nginx/Render ฯลฯ) — ให้ req.ip เป็น IP ผู้ใช้จริง (AuditLog ใช้ req.ip)
+app.set('trust proxy', 1);
+
 // ---------- Global Middleware ----------
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '2mb' })); // จำกัดขนาด payload ป้องกัน DoS แบบ payload ใหญ่เกินจำเป็น

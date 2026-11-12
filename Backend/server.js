@@ -19,7 +19,7 @@ async function startServer() {
 
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: env.FRONTEND_ORIGIN,
+      origin: env.FRONTEND_ORIGIN.split(',').map((o) => o.trim()), // รองรับหลายโดเมน เหมือน corsOptions.js
       credentials: true,
     },
   });
@@ -38,14 +38,14 @@ async function startServer() {
   if (env.NODE_ENV !== 'test') startRetentionScheduler();
 
   httpServer.listen(env.PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${env.PORT} - server.js:37`);
-    console.log(`Environment: ${env.NODE_ENV} - server.js:38`);
-    console.log(`Health check: http://localhost:${env.PORT}/api/health - server.js:39`);
-    console.log(`Socket.io ready for WebRTC signaling + Realtime chat - server.js:40`);
+    console.log(`🚀 Server running on http://localhost:${env.PORT} - server.js:41`);
+    console.log(`Environment: ${env.NODE_ENV} - server.js:42`);
+    console.log(`Health check: http://localhost:${env.PORT}/api/health - server.js:43`);
+    console.log(`Socket.io ready for WebRTC signaling + Realtime chat - server.js:44`);
   });
 }
 
 startServer().catch((err) => {
-  console.error('❌ Failed to start server: - server.js:45', err);
+  console.error('❌ Failed to start server: - server.js:49', err);
   process.exit(1);
 });
