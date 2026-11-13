@@ -2,9 +2,11 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import NotificationBell from './NotificationBell.jsx';
 import HeaderSearch from './HeaderSearch.jsx';
+import ChatPushPrompt from './ChatPushPrompt.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useChatUnread } from '../../hooks/useChatUnread.js';
 import { useNurseConversations } from '../../hooks/useNurseConversations.js';
+import { useUnreadBadge } from '../../hooks/useUnreadBadge.js';
 import './Header.css';
 
 /**
@@ -34,6 +36,9 @@ export default function Header({ title, chat = null }) {
   const { totalUnread: nurseUnread } = useNurseConversations({ enabled: isNurseInbox });
   const chatUnread = isNurseInbox ? nurseUnread : patientUnread;
 
+  // ข้อความแชทที่ยังไม่อ่าน → แสดง "(n)" บนชื่อแท็บ + ตัวเลขบนไอคอนแอป (PWA) ให้เห็นแม้อยู่แท็บ/แอปอื่น
+  useUnreadBadge(chat ? chatUnread : 0);
+
   return (
     <header className="app-header">
       <h1 className="app-header-title">{title}</h1>
@@ -41,14 +46,18 @@ export default function Header({ title, chat = null }) {
         {/* ช่องค้นหาจริง (ผู้ป่วย/ผู้ดูแล/พยาบาล) — Admin ไม่แสดง */}
         <HeaderSearch />
         {chat && (
-          <button
-            className={`header-icon-btn ${onChatPage ? 'active' : ''}`}
-            aria-label={chatUnread > 0 ? `แชท (${chatUnread} ข้อความที่ยังไม่ได้อ่าน)` : 'แชท'}
-            onClick={() => navigate(chat.to)}
-          >
-            💬
-            {chatUnread > 0 && <span className="header-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}
-          </button>
+          <div className="header-chat-wrap">
+            <button
+              className={`header-icon-btn ${onChatPage ? 'active' : ''}`}
+              aria-label={chatUnread > 0 ? `แชท (${chatUnread} ข้อความที่ยังไม่ได้อ่าน)` : 'แชท'}
+              onClick={() => navigate(chat.to)}
+            >
+              💬
+              {chatUnread > 0 && <span className="header-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}
+            </button>
+            {/* ชวนเปิดแจ้งเตือนแชทบนอุปกรณ์นี้ (Web Push) — แสดงเมื่ออยู่หน้าแชทหรือมีข้อความค้างอ่าน */}
+            <ChatPushPrompt active={onChatPage || chatUnread > 0} />
+          </div>
         )}
         {/* กระดิ่งแจ้งเตือนจริง (ผู้ป่วย/ผู้ดูแล/พยาบาล) — Admin ไม่แสดง */}
         <NotificationBell />

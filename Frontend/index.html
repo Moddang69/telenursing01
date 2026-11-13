@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- PWA: จำเป็นสำหรับรับ Web Push บน iPhone/iPad (ต้อง "เพิ่มไปยังหน้าจอโฮม" ก่อน) และติดตั้งแอปบน Android/เดสก์ท็อป -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#2e7d5b" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Telenursing" />
     <title>Telenursing Prototype — Diabetes Self-Management</title>
     <!--
       Font: Sarabun (Google Fonts).

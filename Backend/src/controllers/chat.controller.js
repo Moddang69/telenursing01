@@ -4,6 +4,7 @@ import ApiError from '../utils/ApiError.js';
 import { Message, Patient, CareTeam } from '../models/index.js';
 import { chatRoom, unreadFilterFor, markReadUpdateFor, IDENTITY_MISMATCH_MESSAGE } from '../sockets/chatHandlers.js';
 import { getSenderName, attachSenderNames } from '../services/chatIdentity.js';
+import { notifyChatMessage } from '../services/notification.service.js';
 
 /**
  * chat.controller.js (แชทกลุ่ม ผู้ป่วย/ผู้ดูแล/พยาบาล — ทุกข้อความแนบ senderName)
@@ -56,6 +57,9 @@ export const sendMessageFallback = asyncHandler(async (req, res) => {
 
   // ส่งต่อให้ทุกคนที่เปิดห้องแชทอยู่ (Realtime) — io ถูกเก็บไว้ใน app ตอน start server
   req.app.get('io')?.to(chatRoom(patientId)).emit('new-message', data);
+
+  // Web Push ถึงสมาชิกห้องคนอื่น แม้ไม่ได้เปิดเว็บ (ไม่รอผล)
+  notifyChatMessage({ patientId, message: data }).catch(() => {});
 
   res.status(201).json({ success: true, message: 'ส่งข้อความสำเร็จ', data });
 });

@@ -1,0 +1,44 @@
+# Netlify — deploy เฉพาะ Frontend (Vite + React SPA) จากโฟลเดอร์ Frontend/
+# หมายเหตุ: Backend (Express + Socket.io + MongoDB) รันบน Netlify ไม่ได้ ต้องโฮสต์ที่อื่นที่รองรับ WebSocket
+#           เช่น Render / Railway / Fly.io แล้วนำ URL (https) มาตั้งเป็น VITE_API_BASE_URL / VITE_SOCKET_URL ใน Netlify
+
+[build]
+  base = "Frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # VITE_* คือ URL สาธารณะที่ Vite ฝังลงไฟล์ JS ตามปกติ — กัน Netlify Secrets Scanning เข้าใจผิดว่าเป็นความลับที่รั่วแล้ว fail build
+  SECRETS_SCAN_OMIT_KEYS = "VITE_API_BASE_URL,VITE_SOCKET_URL"
+
+# React Router (SPA): ทุก path ที่ไม่ใช่ไฟล์จริง → index.html (รีเฟรช/เปิดลิงก์ตรง เช่น /patient/chat จะไม่ 404)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Service Worker ต้องไม่ถูก cache นาน ไม่งั้นผู้ใช้จะไม่ได้รับโค้ดแจ้งเตือนเวอร์ชันใหม่
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=3600"
+
+# ไฟล์ที่ Vite สร้างมีแฮชในชื่อ → cache ถาวรได้
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

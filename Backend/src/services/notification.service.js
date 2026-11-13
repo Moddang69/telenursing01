@@ -1,5 +1,6 @@
 import { Notification, Patient, Nurse, Caregiver, CaregiverLink, CareTeam } from '../models/index.js';
-import { sendPushToUser } from './push.service.js';
+import { sendPushToUser, isPushConfigured } from './push.service.js';
+import { env } from '../config/env.js';
 import { formatDateTimeTh } from './reminderRules.js';
 
 /**
@@ -22,6 +23,9 @@ export const LINKS = {
   caregiverMyCare: '/caregiver/my-care',
   nurseAppointments: '/nurse/appointments',
   nursePatient: (patientId) => `/nurse/patients/${patientId}`,
+  patientChat: '/patient/chat',
+  caregiverChat: '/caregiver/chat',
+  nurseChat: (patientId) => `/nurse/chat/${patientId}`,
 };
 
 const toClient = (doc) => ({
@@ -45,7 +49,7 @@ async function deliver(doc) {
       notificationId: String(doc._id),
     });
   } catch (err) {
-    console.warn('push delivery failed: - notification.service.js:48', err.message);
+    console.warn('push delivery failed: - notification.service.js:52', err.message);
   }
 }
 
@@ -70,7 +74,7 @@ export async function createNotifications(entries) {
       created.push(doc);
     } catch (err) {
       if (err?.code === 11000) continue; // เคยแจ้งแล้ว
-      console.error('createNotification failed: - notification.service.js:73', err.message);
+      console.error('createNotification failed: - notification.service.js:77', err.message);
     }
   }
   await Promise.all(created.map(deliver));
@@ -265,6 +269,86 @@ export async function notifyAbnormalHealthRecord({ patientId, record }) {
   );
 }
 
+// ---------- แชทกลุ่ม (ผู้ป่วย / ผู้ดูแล / พยาบาล) → Web Push ----------
+// ส่งเป็น Push อย่างเดียว ไม่สร้างรายการที่กระดิ่ง: แชทมี badge "ยังไม่ได้อ่าน" ของตัวเองที่ไอคอนแชทบน Header อยู่แล้ว
+// service worker จะไม่เด้งซ้ำถ้าผู้รับกำลังเปิดหน้าเว็บอยู่ และใช้ tag เดียวต่อห้อง → ข้อความถี่ๆ รวมเป็นการแจ้งเตือนเดียว
+const CHAT_ROLE_LABEL = { patient: 'ผู้ป่วย', nurse: 'พยาบาล', caregiver: 'ผู้ดูแล' };
+const CHAT_PREVIEW_MAX = 80;
+
+const chatLinkFor = (role, patientId) => {
+  if (role === 'nurse') return LINKS.nurseChat(patientId);
+  if (role === 'caregiver') return LINKS.caregiverChat;
+  return LINKS.patientChat;
+};
+
+const chatPreview = (text) => {
+  if (!env.CHAT_PUSH_PREVIEW) return 'ส่งข้อความใหม่ถึงคุณ';
+  const chars = Array.from(String(text || '').replace(/\s+/g, ' ').trim()); // Array.from กันตัดกลางอีโมจิ
+  return chars.length > CHAT_PREVIEW_MAX ? `${chars.slice(0, CHAT_PREVIEW_MAX).join('')}…` : chars.join('');
+};
+
+/**
+ * notifyChatMessage — ส่ง Push ถึงสมาชิกห้องแชทของผู้ป่วยทุกคน "ยกเว้นผู้ส่ง"
+ *  สมาชิก = ผู้ป่วย + ผู้ดูแลที่เชื่อมโยง (ACTIVE) + พยาบาลใน Care Team (ACTIVE, อนุมัติแล้ว, ยอมรับนโยบายรักษาความลับแล้ว)
+ *  ขอบเขตเดียวกับ checkChatAccess ใน sockets/chatHandlers.js
+ * ไม่ throw เด็ดขาด — ล้มเหลวต้องไม่ทำให้การส่งข้อความพัง
+ * @param {{patientId:string, message:{senderUserId:any, senderRole?:string, senderName?:string, text?:string}}} args
+ * @returns {Promise<number>} จำนวนผู้รับที่พยายามส่ง
+ */
+export async function notifyChatMessage({ patientId, message }) {
+  try {
+    if (!isPushConfigured() || !message) return 0; // ยังไม่ตั้ง VAPID → ไม่ query DB ให้เสียเปล่า
+
+    const senderId = String(message.senderUserId);
+    const [circle, teams] = await Promise.all([
+      getPatientCircle(patientId),
+      CareTeam.find({ patientId, status: 'ACTIVE' }).select('nurseId'),
+    ]);
+    const nurses = teams.length
+      ? await Nurse.find({
+          _id: { $in: teams.map((t) => t.nurseId) },
+          approvalStatus: 'APPROVED',
+          confidentialityAccepted: true,
+        }).select('userId')
+      : [];
+
+    const members = [
+      { userId: circle.patientUserId, role: 'patient' },
+      ...circle.caregiverUserIds.map((userId) => ({ userId, role: 'caregiver' })),
+      ...nurses.map((n) => ({ userId: n.userId, role: 'nurse' })),
+    ];
+
+    const seen = new Set([senderId]);
+    const targets = members.filter((m) => {
+      if (!m.userId || seen.has(String(m.userId))) return false;
+      seen.add(String(m.userId));
+      return true;
+    });
+    if (!targets.length) return 0;
+
+    const who = message.senderName || CHAT_ROLE_LABEL[message.senderRole] || 'มีข้อความใหม่';
+    const preview = chatPreview(message.text);
+
+    await Promise.all(
+      targets.map((t) =>
+        sendPushToUser(t.userId, {
+          title: `💬 ${who}`,
+          // พยาบาลดูแลหลายคน → ระบุชื่อผู้ป่วยว่าเป็นแชทของใคร
+          body: t.role === 'nurse' && circle.patientName ? `[${circle.patientName}] ${preview}` : preview,
+          url: chatLinkFor(t.role, patientId),
+          tag: `chat-${patientId}`,
+          renotify: true, // tag เดิมแต่มีข้อความใหม่ → ยังสั่น/เด้งเตือนอีกครั้ง
+          type: 'chat',
+        }).catch((err) => console.warn('chat push failed: - notification.service.js:342', err.message))
+      )
+    );
+    return targets.length;
+  } catch (err) {
+    console.warn('notifyChatMessage failed: - notification.service.js:347', err.message);
+    return 0;
+  }
+}
+
 export default {
   initNotificationService,
   createNotifications,
@@ -275,5 +359,6 @@ export default {
   notifyCarePlanCreated,
   notifyEducationAssigned,
   notifyAbnormalHealthRecord,
+  notifyChatMessage,
   LINKS,
 };

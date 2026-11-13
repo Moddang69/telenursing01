@@ -37,6 +37,9 @@ export const env = {
   VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
   VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || 'mailto:admin@telenursing.local',
+  // แชท: แสดงตัวอย่างข้อความ (ตัด 80 ตัวอักษร) ในการแจ้งเตือนบนหน้าจอล็อกหรือไม่ — ตั้ง CHAT_PUSH_PREVIEW=false เพื่อซ่อนเนื้อหา (แสดงแค่ "ส่งข้อความใหม่ถึงคุณ")
+  // แนะนำให้ปิดถ้าอุปกรณ์อาจถูกใช้ร่วมกันหลายคน (ข้อมูลสุขภาพเป็นข้อมูลอ่อนไหว)
+  CHAT_PUSH_PREVIEW: process.env.CHAT_PUSH_PREVIEW !== 'false',
   // อายุการเก็บข้อมูล (Data Retention) — ตัวตั้งเวลาลบข้อมูลที่หมดอายุอัตโนมัติ (ดู constants/retention.js)
   // ปิดได้ด้วย RETENTION_PURGE_ENABLED=false / ปรับความถี่ด้วย RETENTION_PURGE_INTERVAL_MINUTES (ค่าเริ่มต้น 60 นาที)
   // ปรับจำนวนวันรายประเภทได้ด้วย RETENTION_DAYS_<ชื่อโมเดลแบบ SNAKE_CASE> เช่น RETENTION_DAYS_HEALTH_RECORD=60

@@ -1,5 +1,6 @@
 import { Message, Patient, Nurse, CareTeam, CaregiverLink } from '../models/index.js';
 import { getSenderName } from '../services/chatIdentity.js';
+import { notifyChatMessage } from '../services/notification.service.js';
 
 /**
  * chatHandlers.js — Realtime Chat ผ่าน Socket.io (แชทกลุ่ม 3 ฝ่าย)
@@ -199,9 +200,13 @@ export function registerChatHandlers(io, socket) {
       socket.join(room); // กันกรณีเพิ่ง reconnect แล้วยังไม่ได้ join ใหม่ — ผู้ส่งจะได้รับข้อความของตัวเองด้วย
       const data = { ...message.toObject(), senderName: await senderName() };
       io.to(room).emit('new-message', data);
+
+      // Web Push ถึงสมาชิกห้องคนอื่น แม้ไม่ได้เปิดเว็บ — ไม่รอผล และห้ามกระทบการส่งข้อความ (notifyChatMessage ไม่ throw)
+      notifyChatMessage({ patientId, message: data }).catch(() => {});
+
       reply(ack, { ok: true, message: data });
     } catch (err) {
-      console.error('chatmessage error: - chatHandlers.js:204', err);
+      console.error('chatmessage error: - chatHandlers.js:209', err);
       reply(ack, deny('ส่งข้อความไม่สำเร็จ'));
     }
   });

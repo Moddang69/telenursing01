@@ -17,12 +17,19 @@ self.addEventListener('push', (event) => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       if (windows.some((c) => c.visibilityState === 'visible')) return;
 
-      await self.registration.showNotification(data.title || 'Telenursing', {
+      const options = {
         body: data.body || '',
         tag: data.tag || undefined,
         lang: 'th',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/badge-96.png',
         data: { url: data.url || '/' },
-      });
+      };
+      // แชท: tag เดียวต่อห้อง → ข้อความใหม่แทนที่อันเดิม แต่ renotify ให้ยังสั่น/เด้งเตือนอีกครั้ง
+      // (renotify ต้องมี tag เสมอ ไม่งั้น showNotification จะ throw TypeError)
+      if (data.tag && data.renotify) options.renotify = true;
+
+      await self.registration.showNotification(data.title || 'Telenursing', options);
     })()
   );
 });

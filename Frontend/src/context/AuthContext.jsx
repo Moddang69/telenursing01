@@ -80,7 +80,8 @@ export function AuthProvider({ children }) {
           setSessionExpired(true);
           setUser(null);
 
-          await unsubscribeThisDevice();
+          // หมดเวลาเพราะไม่ได้ใช้งาน ≠ ออกจากระบบ: ไม่ยกเลิก Web Push ของเครื่องนี้ (ผู้ใช้อาจเปิดแท็บค้างไว้แล้วไปทำอย่างอื่น
+          // — ถ้ายกเลิกที่นี่ จะไม่มีแจ้งเตือนแชท/นัดหมายอีกเลยหลังผ่านไป 30 นาที) ยกเลิกเฉพาะตอนกดออกจากระบบเอง (logout ด้านล่าง)
           await authService.logout();
           disconnectSocket();
 
@@ -146,7 +147,8 @@ export function AuthProvider({ children }) {
       setUser(null);
       setSessionExpired(true);
       disconnectSocket();
-      unsubscribeThisDevice(); // Token หมดอายุแล้ว: เลิกรับ Push ฝั่งอุปกรณ์ (ไม่รอผล)
+      // Token หมดอายุ: คงการรับ Push ของเครื่องนี้ไว้ (เหตุผลเดียวกับ session timeout ด้านบน)
+      // เครื่องที่ล็อกอินบัญชีอื่นภายหลังจะถูกย้ายเจ้าของอัตโนมัติผ่าน syncPush() ตอนเข้าสู่ระบบ
 
     };
 

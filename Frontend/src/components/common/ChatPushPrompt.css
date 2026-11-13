@@ -1,0 +1,35 @@
+/* ห่อปุ่มแชทบน Header เพื่อยึดตำแหน่งป๊อปอัปชวนเปิดการแจ้งเตือน */
+.header-chat-wrap { position: relative; display: flex; }
+
+.chat-push-prompt {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  width: 270px;
+  max-width: calc(100vw - 72px);
+  box-sizing: border-box;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
+}
+.chat-push-prompt p { margin: 0 0 var(--space-2); }
+.chat-push-prompt-error { color: #b3261e; }
+.chat-push-prompt-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.chat-push-prompt-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+.chat-push-prompt-btn.primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.chat-push-prompt-btn:disabled { opacity: 0.6; }
