@@ -1,0 +1,28 @@
+# Caddy — reverse proxy + HTTPS อัตโนมัติ (Let's Encrypt) สำหรับ docker-compose.yml
+# DOMAIN ถูกส่งเข้า container จาก .env (ตัวแปรสภาพแวดล้อมของ service caddy)
+# ต้องชี้ DNS ของโดเมนมาที่ IP ของ VPS และเปิดพอร์ต 80/443 ก่อน Caddy จึงจะขอใบรับรองได้
+{$DOMAIN} {
+	encode zstd gzip
+
+	# REST API → Backend (ชื่อ service ใน docker-compose คือ backend, พอร์ต 5000)
+	handle /api/* {
+		reverse_proxy backend:5000
+	}
+
+	# Socket.io (แชท/วิดีโอคอล/แจ้งเตือน Realtime) — reverse_proxy รองรับ WebSocket upgrade อัตโนมัติ
+	handle /socket.io/* {
+		reverse_proxy backend:5000
+	}
+
+	# ที่เหลือ → Frontend (nginx ที่เสิร์ฟไฟล์ React + SPA fallback)
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
