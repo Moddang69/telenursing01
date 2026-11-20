@@ -1,5 +1,5 @@
-import React from 'react';
-import { CameraOff, Minus, Plus, PictureInPicture2, Columns2, User } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { CameraOff, Minus, Plus, PictureInPicture2, Columns2, User, Maximize2, Minimize2 } from 'lucide-react';
 import { useVideoLayout } from '../../hooks/useVideoLayout.js';
 import './VideoStage.css';
 
@@ -14,6 +14,31 @@ import './VideoStage.css';
  */
 export default function VideoStage({ call, remoteLabel = 'คู่สนทนา', children }) {
   const { layout, size, setLayout, growSelf, shrinkSelf, canGrow, canShrink } = useVideoLayout();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // ติดตามสถานะ fullscreen
+  useEffect(() => {
+    const handleChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    const stage = document.querySelector('.vs-stage');
+    if (!stage) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await stage.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  }, []);
 
   return (
     <div className={`vs-stage vs-${layout} vs-size-${size}`}>
@@ -58,6 +83,19 @@ export default function VideoStage({ call, remoteLabel = 'คู่สนทน�
             </button>
           </span>
         )}
+
+        <button
+          type="button"
+          className={isFullscreen ? 'active' : ''}
+          onClick={toggleFullscreen}
+          aria-pressed={isFullscreen}
+          title={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'แสดงเต็มจอ'}
+        >
+          {isFullscreen
+            ? <><Minimize2 size={16} className="inline-icon" /><span className="vs-btn-text"> ออกจากเต็มจอ</span></>
+            : <><Maximize2 size={16} className="inline-icon" /><span className="vs-btn-text"> เต็มจอ</span></>
+          }
+        </button>
       </div>
 
       {children}
