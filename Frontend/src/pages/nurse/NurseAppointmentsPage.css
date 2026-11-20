@@ -8,3 +8,7 @@
 .status-available { background: var(--color-normal-bg); color: var(--color-normal); }
 .queue-card-actions { display: flex; flex-direction: column; gap: var(--space-2); }
 .preconsult-list { list-style: none; padding: 0; font-size: var(--font-size-sm); }
+.swipe-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); margin: 0 0 var(--space-3); }
+.confirm-delete-note { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+.confirm-delete-actions { display: flex; gap: var(--space-2); justify-content: flex-end; flex-wrap: wrap; margin-top: var(--space-3); }
+.confirm-delete-actions button { min-height: 48px; min-width: 120px; width: auto; }

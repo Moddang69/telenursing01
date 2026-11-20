@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Info } from 'lucide-react';
 import { appointmentService } from '../../services/appointmentService.js';
 import { useNotification } from '../../context/NotificationContext.jsx';
 import './NurseAppointmentTab.css';
@@ -47,7 +48,7 @@ export default function NurseAppointmentTab({ patient }) {
     <div className="nurse-appointment-tab">
       {existing && (
         <div className="existing-appointment-note">
-          ℹ️ ผู้ป่วยรายนี้มีนัดหมายอยู่แล้ว: {existing.date} เวลา {existing.time} น. (สถานะ: {existing.status})
+          <Info size={16} className="inline-icon" /> ผู้ป่วยรายนี้มีนัดหมายอยู่แล้ว: {existing.date} เวลา {existing.time} น. (สถานะ: {existing.status})
         </div>
       )}
 

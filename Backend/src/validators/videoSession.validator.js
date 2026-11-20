@@ -7,4 +7,5 @@ export const appointmentIdParamValidator = [
 export const endVideoSessionValidator = [
   ...appointmentIdParamValidator,
   body('consultationNote').optional().isString().isLength({ max: 5000 }),
+  body('wasConnected').optional().isBoolean(),
 ];

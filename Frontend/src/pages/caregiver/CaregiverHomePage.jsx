@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
+import { Video, Calendar, UtensilsCrossed, Activity } from 'lucide-react';
 import { healthService } from '../../services/healthService.js';
 import { appointmentService } from '../../services/appointmentService.js';
 import HealthOverview from '../../components/common/HealthOverview.jsx';
@@ -56,13 +57,13 @@ export default function CaregiverHomePage() {
             <p className="appointment-date">{appointment.date} เวลา {appointment.time} น.</p>
             <p><strong>พยาบาล:</strong> {appointment.nurseName}</p>
             {appointment.status !== 'COMPLETED' && (
-              <button className="btn-primary btn-large" onClick={() => navigate('/patient/pre-consult-check')}>
-                🎥 ช่วยผู้ป่วยเข้าห้องรอ (ตรวจอุปกรณ์ + แบบสอบถาม)
+              <button className="btn-primary btn-large" onClick={() => navigate(ROUTES.PATIENT_PRE_CONSULT_CHECK)}>
+                <Video size={18} className="inline-icon" /> ช่วยผู้ป่วยเข้าห้องรอ (ตรวจอุปกรณ์ + แบบสอบถาม)
               </button>
             )}
           </div>
         ) : (
-          <EmptyState icon="📅" title="ยังไม่มีนัดหมาย" />
+          <EmptyState icon={Calendar} title="ยังไม่มีนัดหมาย" />
         )}
       </section>
 
@@ -74,14 +75,14 @@ export default function CaregiverHomePage() {
 
       <section className="home-section">
         <h2>ประวัติการรับประทานอาหารล่าสุด</h2>
-        {meals.length === 0 ? <EmptyState icon="🍽️" title="ยังไม่มีข้อมูล" /> : (
+        {meals.length === 0 ? <EmptyState icon={UtensilsCrossed} title="ยังไม่มีข้อมูล" /> : (
           <ul className="mini-history-list">{meals.map((m, i) => (<li key={i}><strong>{m.date}</strong> · {m.meal}: {m.description}</li>))}</ul>
         )}
       </section>
 
       <section className="home-section">
         <h2>ประวัติการออกกำลังกายล่าสุด</h2>
-        {exercises.length === 0 ? <EmptyState icon="🏃" title="ยังไม่มีข้อมูล" /> : (
+        {exercises.length === 0 ? <EmptyState icon={Activity} title="ยังไม่มีข้อมูล" /> : (
           <ul className="mini-history-list">{exercises.map((ex, i) => (<li key={i}><strong>{ex.date}</strong> · {ex.activity}</li>))}</ul>
         )}
       </section>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bell, Calendar, Clock, XCircle, ClipboardList, BookOpen, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useNotification } from '../../context/NotificationContext.jsx';
 import { useNotifications } from '../../hooks/useNotifications.js';
@@ -7,12 +8,12 @@ import { usePushNotifications } from '../../hooks/usePushNotifications.js';
 import './NotificationBell.css';
 
 const ICON = {
-  APPOINTMENT_CREATED: '📅',
-  APPOINTMENT_REMINDER: '⏰',
-  APPOINTMENT_CANCELLED: '🚫',
-  CARE_PLAN_NEW: '📋',
-  EDUCATION_NEW: '📚',
-  HEALTH_ABNORMAL: '⚠️',
+  APPOINTMENT_CREATED: Calendar,
+  APPOINTMENT_REMINDER: Clock,
+  APPOINTMENT_CANCELLED: XCircle,
+  CARE_PLAN_NEW: ClipboardList,
+  EDUCATION_NEW: BookOpen,
+  HEALTH_ABNORMAL: AlertTriangle,
 };
 
 // "เมื่อสักครู่", "5 นาทีที่แล้ว", "2 ชั่วโมงที่แล้ว", "เมื่อวาน", หรือวันที่
@@ -98,7 +99,7 @@ export default function NotificationBell() {
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        🔔
+        <Bell size={20} />
         {unreadCount > 0 && <span className="header-badge">{badge}</span>}
       </button>
 
@@ -126,24 +127,27 @@ export default function NotificationBell() {
             {!loading && error && <p className="notif-empty">{error}</p>}
             {!loading && !error && items.length === 0 && <p className="notif-empty">ยังไม่มีการแจ้งเตือน</p>}
 
-            {items.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                className={`notif-item ${n.read ? '' : 'unread'}`}
-                onClick={() => handleItemClick(n)}
-              >
-                <span className="notif-icon" aria-hidden="true">
-                  {ICON[n.type] || '🔔'}
-                </span>
-                <span className="notif-text">
-                  <span className="notif-title">{n.title}</span>
-                  <span className="notif-body">{n.body}</span>
-                  <span className="notif-time">{timeAgo(n.createdAt)}</span>
-                </span>
-                {!n.read && <span className="notif-dot" aria-label="ยังไม่ได้อ่าน" />}
-              </button>
-            ))}
+            {items.map((n) => {
+              const IconComponent = ICON[n.type] || Bell;
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  className={`notif-item ${n.read ? '' : 'unread'}`}
+                  onClick={() => handleItemClick(n)}
+                >
+                  <span className="notif-icon" aria-hidden="true">
+                    <IconComponent size={18} />
+                  </span>
+                  <span className="notif-text">
+                    <span className="notif-title">{n.title}</span>
+                    <span className="notif-body">{n.body}</span>
+                    <span className="notif-time">{timeAgo(n.createdAt)}</span>
+                  </span>
+                  {!n.read && <span className="notif-dot" aria-label="ยังไม่ได้อ่าน" />}
+                </button>
+              );
+            })}
 
             {hasMore && (
               <button type="button" className="notif-more" onClick={loadMore}>

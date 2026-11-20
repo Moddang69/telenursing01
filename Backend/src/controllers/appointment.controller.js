@@ -83,25 +83,40 @@ export const getAppointments = asyncHandler(async (req, res) => {
 
 // GET /api/appointments/:patientId/:appointmentId
 export const getAppointmentById = asyncHandler(async (req, res) => {
-  const appointment = await Appointment.findById(req.params.appointmentId).populate(
-    'nurseId',
-    'firstName lastName hospital'
-  );
+  // ต้องเป็นนัดหมายของผู้ป่วยตาม :patientId ที่ผ่านการตรวจสิทธิ์แล้วเท่านั้น (เดิมค้นด้วย appointmentId อย่างเดียว)
+  const appointment = await Appointment.findOne({
+    _id: req.params.appointmentId,
+    patientId: req.params.patientId,
+  }).populate('nurseId', 'firstName lastName hospital');
   if (!appointment) throw new ApiError(404, 'ไม่พบข้อมูลการนัดหมาย');
   res.status(200).json({ success: true, data: appointment });
 });
 
 // PATCH /api/appointments/:patientId/:appointmentId/status
 export const updateAppointmentStatus = asyncHandler(async (req, res) => {
-  const { appointmentId } = req.params;
+  const { patientId, appointmentId } = req.params;
   const { status } = req.body;
+
+  // ต้องเป็นนัดหมายของผู้ป่วยตาม :patientId ที่ผ่านการตรวจสิทธิ์แล้วเท่านั้น
+  // (เดิมแก้ได้ด้วย appointmentId อย่างเดียว → พยาบาลที่ดูแลผู้ป่วย A ยกเลิกนัดของผู้ป่วย B ได้ถ้ารู้ id)
+  const current = await Appointment.findOne({ _id: appointmentId, patientId });
+  if (!current) throw new ApiError(404, 'ไม่พบข้อมูลการนัดหมาย');
+
+  if (status === 'CANCELLED') {
+    if (current.status === 'CANCELLED') {
+      // ยกเลิกไปแล้ว (เช่น กดซ้ำ) — ตอบสำเร็จโดยไม่แจ้งเตือนซ้ำ
+      return res.status(200).json({ success: true, message: 'นัดหมายนี้ถูกยกเลิกแล้ว', data: current });
+    }
+    if (['COMPLETED', 'NO_SHOW', 'IN_CONSULTATION'].includes(current.status)) {
+      throw new ApiError(409, 'ไม่สามารถยกเลิกนัดหมายที่เสร็จสิ้นแล้วหรือกำลังให้คำปรึกษาอยู่ได้');
+    }
+  }
 
   const appointment = await Appointment.findByIdAndUpdate(
     appointmentId,
     { $set: { status } },
     { new: true }
   );
-  if (!appointment) throw new ApiError(404, 'ไม่พบข้อมูลการนัดหมาย');
 
   await logAudit({
     userId: req.user.userId,

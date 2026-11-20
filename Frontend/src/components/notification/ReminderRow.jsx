@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Check } from 'lucide-react';
 import WheelPicker from './WheelPicker.jsx';
 import { PRESETS, UNITS, unitByKey, toParts, fromParts, describeOffset } from '../../utils/reminderOffsets.js';
 
@@ -57,7 +58,7 @@ export default function ReminderRow({ minutes, expanded, onToggle, onChange, onR
                 }}
               >
                 <span>{p.label}</span>
-                <span aria-hidden="true">{mode === 'preset' && minutes === p.minutes ? '✓' : ''}</span>
+                <span aria-hidden="true">{mode === 'preset' && minutes === p.minutes ? <Check size={16} /> : ''}</span>
               </button>
             ))}
             <button
@@ -72,7 +73,7 @@ export default function ReminderRow({ minutes, expanded, onToggle, onChange, onR
               }}
             >
               <span>กำหนดเอง</span>
-              <span aria-hidden="true">{mode === 'custom' ? '✓' : ''}</span>
+              <span aria-hidden="true">{mode === 'custom' ? <Check size={16} /> : ''}</span>
             </button>
           </div>
 

@@ -11,7 +11,7 @@ export default function PlaceholderPage({ title }) {
       </p>
       {user && (
         <div className="placeholder-user-info">
-          <p>เข้าสู่ระบบในนามะ: {user.name} ({user.role})</p>
+          <p>เข้าสู่ระบบในนาม: {user.name} ({user.role})</p>
           <button onClick={logout} className="btn-secondary">
             ออกจากระบบ
           </button>

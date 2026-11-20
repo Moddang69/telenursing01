@@ -1,15 +1,16 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { Home, Calendar, BarChart3, User } from 'lucide-react';
 import Header from '../components/common/Header.jsx';
 import BottomNav from '../components/common/BottomNav.jsx';
 import { ROUTES } from '../constants/routes.js';
 import './NurseLayout.css';
 
 const navItems = [
-  { to: ROUTES.NURSE_HOME, label: 'หน้าหลัก', icon: '🏠' },
-  { to: ROUTES.NURSE_APPOINTMENTS, label: 'นัดหมาย', icon: '📅' },
-  { to: ROUTES.NURSE_HISTORY, label: 'History', icon: '📊' },
-  { to: ROUTES.NURSE_PROFILE, label: 'โปรไฟล์', icon: '👤' },
+  { to: ROUTES.NURSE_HOME, label: 'หน้าหลัก', icon: Home },
+  { to: ROUTES.NURSE_APPOINTMENTS, label: 'นัดหมาย', icon: Calendar },
+  { to: ROUTES.NURSE_HISTORY, label: 'History', icon: BarChart3 },
+  { to: ROUTES.NURSE_PROFILE, label: 'โปรไฟล์', icon: User },
 ];
 
 export default function NurseLayout() {

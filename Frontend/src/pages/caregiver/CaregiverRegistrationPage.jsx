@@ -8,13 +8,13 @@ import { authService } from '../../services/authService.js';
 export default function CaregiverRegistrationPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    firstName:accountData?.firstName || '',
-    lastName:accountData?.lastName || '', 
-    email: '', 
-    password: '', 
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
     confirmPassword: '',
-    phone:accountData?.phone || '', 
-    address: '', 
+    phone: '',
+    address: '',
     secondaryContact: '',
   });
   const [errors, setErrors] = useState({});

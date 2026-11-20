@@ -3,8 +3,12 @@ import app from '../../src/app.js';
 import authService from '../../src/services/auth.service.js';
 import { Patient } from '../../src/models/index.js';
 import { generateToken } from '../../src/utils/generateToken.js';
+import { ensureCollections } from '../helpers/ensureCollections.js';
 
 describe('Consent Enforcement — Integration Tests (Phase 4.6 / Phase 10)', () => {
+  beforeAll(async () => {
+    await ensureCollections();
+  });
   async function createPatientWithToken() {
     const result = await authService.registerUser({
       email: 'consentTest@example.com',

@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { adminService } from '../../services/adminService.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
+import ErrorState from '../../components/common/ErrorState.jsx';
 import './AdminDashboardPage.css';
 
 export default function AdminDashboardPage() {
   const [summary, setSummary] = useState(null);
+  const [error, setError] = useState(false);
 
-  useEffect(() => { adminService.getDashboardSummary().then(setSummary); }, []);
+  const load = () => {
+    setError(false);
+    adminService.getDashboardSummary()
+      .then(setSummary)
+      .catch((err) => {
+        console.error('AdminDashboardPage load error:', err);
+        setError(true);
+      });
+  };
 
+  useEffect(() => { load(); }, []);
+
+  if (error) return <ErrorState message="ไม่สามารถโหลดข้อมูลแดชบอร์ดได้" onRetry={load} />;
   if (!summary) return <LoadingState />;
 
   const cards = [

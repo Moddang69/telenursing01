@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { UtensilsCrossed, Activity, ClipboardList, BookOpen, Link, Lock } from 'lucide-react';
 import { nurseService } from '../../services/nurseService.js';
 import { healthService } from '../../services/healthService.js';
 import { carePlanService } from '../../services/carePlanService.js';
@@ -135,12 +136,12 @@ export default function NursePatientDetailPage() {
           <HealthOverview health={health} />
 
           <h3 className="section-subheading">ประวัติการรับประทานอาหาร</h3>
-          {meals.length === 0 ? <EmptyState icon="🍽️" title="ยังไม่มีข้อมูล" /> : (
+          {meals.length === 0 ? <EmptyState icon={UtensilsCrossed} title="ยังไม่มีข้อมูล" /> : (
             <ul className="mini-history-list">{meals.map((m, i) => (<li key={i}><strong>{m.date}</strong> · {m.meal}: {m.description}</li>))}</ul>
           )}
 
           <h3 className="section-subheading">ประวัติการออกกำลังกาย</h3>
-          {exercises.length === 0 ? <EmptyState icon="🏃" title="ยังไม่มีข้อมูล" /> : (
+          {exercises.length === 0 ? <EmptyState icon={Activity} title="ยังไม่มีข้อมูล" /> : (
             <ul className="mini-history-list">{exercises.map((ex, i) => (<li key={i}><strong>{ex.date}</strong> · {ex.activity} ({ex.duration} นาที, {ex.distance} กม.)</li>))}</ul>
           )}
         </div>
@@ -154,11 +155,11 @@ export default function NursePatientDetailPage() {
           </button>
 
           {carePlans.length === 0 ? (
-            <EmptyState icon="📋" title="ยังไม่มีแผนการดูแล" />
+            <EmptyState icon={ClipboardList} title="ยังไม่มีแผนการดูแล" />
           ) : (
             <div className="care-plan-list">
               {carePlans.map((cp) => (
-                <div key={cp._id} className="care-plan-card">
+                <div key={cp.id} className="care-plan-card">
                   <div className="care-plan-header">
                     <h3>{cp.goal}</h3>
                     <span className={`plan-status-tag ${cp.status === 'ACTIVE' ? 'active' : ''}`}>
@@ -198,16 +199,16 @@ export default function NursePatientDetailPage() {
           </button>
 
           {education.length === 0 ? (
-            <EmptyState icon="📚" title="ยังไม่มีการมอบหมายความรู้สุขภาพ" />
+            <EmptyState icon={BookOpen} title="ยังไม่มีการมอบหมายความรู้สุขภาพ" />
           ) : (
             <div className="education-list">
               {education.map((ed) => (
-                <div key={ed._id} className="education-card">
+                <div key={ed.id} className="education-card">
                   <span className="education-category">{ed.category}</span>
                   <h3>{ed.title}</h3>
                   {ed.description && <p>{ed.description}</p>}
                   {ed.contentUrl && (
-                    <a href={ed.contentUrl} target="_blank" rel="noreferrer">🔗 เปิดสื่อการสอน</a>
+                    <a href={ed.contentUrl} target="_blank" rel="noreferrer"><Link size={14} className="inline-icon" /> เปิดสื่อการสอน</a>
                   )}
                   <span className={`edu-status-tag edu-${ed.status.toLowerCase()}`}>
                     {eduStatusLabel[ed.status] || ed.status}
@@ -250,7 +251,7 @@ export default function NursePatientDetailPage() {
             </tbody>
           </table>
           <p className="medical-history-note">
-            🔒 ข้อมูลนี้เป็นข้อมูลส่วนบุคคลที่ได้รับการคุ้มครองตาม PDPA
+            <Lock size={14} className="inline-icon" /> ข้อมูลนี้เป็นข้อมูลส่วนบุคคลที่ได้รับการคุ้มครองตาม PDPA
             ห้ามเปิดเผย คัดลอก หรือส่งต่อแก่บุคคลภายนอกที่ไม่เกี่ยวข้อง
           </p>
         </div>

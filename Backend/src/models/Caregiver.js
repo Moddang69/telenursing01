@@ -21,6 +21,5 @@ const caregiverSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-caregiverSchema.index({ userId: 1 }, { unique: true });
 
 export default mongoose.model('Caregiver', caregiverSchema);

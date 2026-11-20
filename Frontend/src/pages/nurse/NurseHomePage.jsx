@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { UserCheck } from 'lucide-react';
 import { nurseService } from '../../services/nurseService.js';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import LoadingState from '../../components/common/LoadingState.jsx';
@@ -42,7 +43,7 @@ export default function NurseHomePage() {
       <section className="home-section">
         <h2>ผู้ป่วยในความดูแล</h2>
         {patients.length === 0 ? (
-          <EmptyState icon="🧑‍⚕️" title="ยังไม่มีผู้ป่วยในความดูแล" />
+          <EmptyState icon={UserCheck} title="ยังไม่มีผู้ป่วยในความดูแล" />
         ) : (
           <div className="patient-card-list">
             {patients.map((p) => (

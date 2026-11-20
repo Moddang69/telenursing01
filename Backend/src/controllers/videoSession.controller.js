@@ -25,6 +25,12 @@ export const createOrGetVideoSession = asyncHandler(async (req, res) => {
       nurseId: appointment.nurseId,
       state: 'WAITING_FOR_NURSE',
     });
+  } else if (session.state === 'CALL_ENDED' && appointment.status !== 'COMPLETED') {
+    // session ถูกปิดไปแต่นัดหมายยังไม่เสร็จสิ้น (เช่น วางสายก่อนคู่สนทนาเข้า) → เปิดให้เข้าห้องใหม่ได้
+    session.state = 'WAITING_FOR_NURSE';
+    session.endedAt = null;
+    session.connectedAt = null;
+    await session.save();
   }
 
   res.status(200).json({ success: true, data: session });
@@ -40,7 +46,26 @@ export const getVideoSession = asyncHandler(async (req, res) => {
 // PATCH /api/video-sessions/:appointmentId/end  (Nurse บันทึกสรุปการปรึกษา + ปิด Session)
 export const endVideoSession = asyncHandler(async (req, res) => {
   const { appointmentId } = req.params;
-  const { consultationNote } = req.body;
+  const { consultationNote, wasConnected } = req.body;
+
+  const existing = await VideoSession.findOne({ appointmentId });
+  if (!existing) throw new ApiError(404, 'ไม่พบข้อมูล Video Session');
+
+  // คู่สนทนายังไม่เคยเชื่อมต่อกัน → เป็นแค่การออกจากห้อง: ไม่ปิดนัดหมาย/ไม่บันทึกสรุป และเข้าร่วมใหม่ได้
+  const happened = !!existing.connectedAt || wasConnected === true || wasConnected === 'true';
+  if (!happened) {
+    if (existing.state !== 'CALL_ENDED') {
+      existing.state = 'WAITING_FOR_NURSE';
+      existing.endedAt = null;
+      await existing.save();
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'ออกจากห้องแล้ว (ยังไม่เริ่มการปรึกษา จึงยังไม่ปิดนัดหมาย)',
+      completed: false,
+      data: existing,
+    });
+  }
 
   const session = await VideoSession.findOneAndUpdate(
     { appointmentId },
@@ -49,14 +74,17 @@ export const endVideoSession = asyncHandler(async (req, res) => {
         state: 'CALL_ENDED',
         endedAt: new Date(),
         consultationNote: consultationNote || null,
+        ...(existing.connectedAt ? {} : { connectedAt: new Date() }),
       },
     },
     { new: true }
   );
 
-  if (!session) throw new ApiError(404, 'ไม่พบข้อมูล Video Session');
-
-  await Appointment.findByIdAndUpdate(appointmentId, { $set: { status: 'COMPLETED' } });
+  // ไม่ทับสถานะที่ถูกยกเลิก/เลื่อน/ไม่มาตามนัดไปแล้ว
+  await Appointment.updateOne(
+    { _id: appointmentId, status: { $nin: ['CANCELLED', 'RESCHEDULED', 'NO_SHOW'] } },
+    { $set: { status: 'COMPLETED' } }
+  );
 
   await logAudit({
     userId: req.user.userId,
@@ -68,7 +96,7 @@ export const endVideoSession = asyncHandler(async (req, res) => {
     ipAddress: req.ip,
   });
 
-  res.status(200).json({ success: true, message: 'จบการปรึกษาสำเร็จ', data: session });
+  res.status(200).json({ success: true, message: 'จบการปรึกษาสำเร็จ', completed: true, data: session });
 });
 
 // POST /api/video-sessions/:appointmentId/agora-token  (ออก RTC Token สำหรับเข้าห้อง Agora)

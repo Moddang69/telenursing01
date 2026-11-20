@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Sun, Moon, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useAccessibility } from '../../context/AccessibilityContext.jsx';
 import { assignmentService } from '../../services/assignmentService.js';
@@ -39,10 +40,16 @@ export default function PatientProfilePage() {
     : availableNurses.find((n) => n.id === assignedNurseIdStr) || null;
 
   useEffect(() => {
-    assignmentService.getAvailableNurses().then(setAvailableNurses);
+    assignmentService.getAvailableNurses()
+      .then(setAvailableNurses)
+      .catch((err) => console.error('getAvailableNurses failed:', err));
     if (user?.id) {
-      assignmentService.getMyNurseChangeRequest().then(setPendingRequest);
-      dataRequestService.getMyDataDeletionRequest().then(setPendingDeletionRequest);
+      assignmentService.getMyNurseChangeRequest()
+        .then(setPendingRequest)
+        .catch((err) => console.error('getMyNurseChangeRequest failed:', err));
+      dataRequestService.getMyDataDeletionRequest()
+        .then(setPendingDeletionRequest)
+        .catch((err) => console.error('getMyDataDeletionRequest failed:', err));
     }
   }, [user]);
 
@@ -121,7 +128,7 @@ export default function PatientProfilePage() {
 
         {pendingRequest?.status === 'PENDING' ? (
           <p className="pending-request-note" style={{ marginTop: 12, color: '#d97706' }}>
-            ⏳ คำขอเปลี่ยนพยาบาลของท่านเป็น <strong>{pendingRequest.requestedNurseName}</strong> อยู่ระหว่างการพิจารณาโดยผู้ดูแลระบบ
+            <Clock size={16} className="inline-icon" /> คำขอเปลี่ยนพยาบาลของท่านเป็น <strong>{pendingRequest.requestedNurseName}</strong> อยู่ระหว่างการพิจารณาโดยผู้ดูแลระบบ
           </p>
         ) : (
           <button className="btn-secondary" style={{ marginTop: 12 }} onClick={() => setShowChangeNurseModal(true)}>
@@ -145,8 +152,12 @@ export default function PatientProfilePage() {
         <div className="setting-row">
           <label className="form-label">ธีมสี</label>
           <div className="setting-options">
-            <button className={`setting-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>☀️ สว่าง</button>
-            <button className={`setting-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>🌙 มืด</button>
+            <button className={`setting-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>
+              <Sun size={16} className="inline-icon" /> สว่าง
+            </button>
+            <button className={`setting-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>
+              <Moon size={16} className="inline-icon" /> มืด
+            </button>
           </div>
         </div>
       </section>
@@ -168,14 +179,14 @@ export default function PatientProfilePage() {
 
         {pendingDeletionRequest?.status === 'PENDING' ? (
           <p className="pending-request-note" style={{ color: '#d97706', fontSize: 'var(--font-size-sm)' }}>
-            ⏳ คำขอลบข้อมูลของท่านอยู่ระหว่างการพิจารณาโดยผู้ดูแลระบบ<br />
+            <Clock size={16} className="inline-icon" /> คำขอลบข้อมูลของท่านอยู่ระหว่างการพิจารณาโดยผู้ดูแลระบบ<br />
             หมวดที่ขอลบ: {pendingDeletionRequest.categories
               .map((k) => dataDeletionCategories.find((c) => c.key === k)?.label || k)
               .join(', ')}
           </p>
         ) : pendingDeletionRequest?.status === 'CONFIRMED' ? (
           <p className="deletion-success" style={{ color: 'var(--color-normal)', fontSize: 'var(--font-size-sm)' }}>
-            ✅ คำขอลบข้อมูลของท่านได้รับการอนุมัติแล้ว
+            <CheckCircle size={16} className="inline-icon" /> คำขอลบข้อมูลของท่านได้รับการอนุมัติแล้ว
           </p>
         ) : (
           <button className="btn-danger-outline btn-full" onClick={() => setShowDeletionModal(true)}>

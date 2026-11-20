@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, User, Calendar, ClipboardList, BookOpen, MessageCircle, UserCheck, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useHeaderSearch, MIN_QUERY_LENGTH } from '../../hooks/useHeaderSearch.js';
 import { SEARCH_HINTS, matchShortcuts } from '../../data/searchShortcuts.js';
 import './HeaderSearch.css';
 
 const ICON = {
-  patient: '🧑',
-  appointment: '📅',
-  carePlan: '📋',
-  education: '📚',
-  message: '💬',
-  nurse: '👩‍⚕️',
-  page: '➡️',
+  patient: User,
+  appointment: Calendar,
+  carePlan: ClipboardList,
+  education: BookOpen,
+  message: MessageCircle,
+  nurse: UserCheck,
+  page: ArrowRight,
 };
 
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -113,13 +114,13 @@ export default function HeaderSearch() {
         aria-expanded={open}
         onClick={() => (open ? close() : setOpen(true))}
       >
-        🔍
+        <Search size={20} />
       </button>
 
       {open && (
         <div className="hs-panel" role="dialog" aria-label="ค้นหา">
           <div className="hs-inputrow">
-            <span aria-hidden="true">🔍</span>
+            <span aria-hidden="true"><Search size={16} /></span>
             <input
               ref={inputRef}
               className="hs-input"
@@ -172,7 +173,12 @@ export default function HeaderSearch() {
                       onMouseEnter={() => setActive(i)}
                       onClick={() => go(item)}
                     >
-                      <span className="hs-icon" aria-hidden="true">{ICON[item.icon] || '🔎'}</span>
+                      <span className="hs-icon" aria-hidden="true">
+                        {(() => {
+                          const IconComponent = ICON[item.icon] || Search;
+                          return <IconComponent size={16} />;
+                        })()}
+                      </span>
                       <span className="hs-text">
                         <span className="hs-title"><Highlight text={item.title} tokens={tokens} /></span>
                         {item.subtitle && <span className="hs-sub"><Highlight text={item.subtitle} tokens={tokens} /></span>}

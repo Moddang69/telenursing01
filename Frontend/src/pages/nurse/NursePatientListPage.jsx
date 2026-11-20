@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { UserCheck, MessageCircle } from 'lucide-react';
 import { nurseService } from '../../services/nurseService.js';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import LoadingState from '../../components/common/LoadingState.jsx';
@@ -24,7 +25,7 @@ export default function NursePatientListPage() {
 
   if (error) return <ErrorState message="ไม่สามารถโหลดรายชื่อผู้ป่วยได้" onRetry={load} />;
   if (!patients) return <LoadingState />;
-  if (patients.length === 0) return <EmptyState icon="🧑‍⚕️" title="ยังไม่มีผู้ป่วยในความดูแล" />;
+  if (patients.length === 0) return <EmptyState icon={UserCheck} title="ยังไม่มีผู้ป่วยในความดูแล" />;
 
   return (
     <div className="patient-list-page">
@@ -45,7 +46,7 @@ export default function NursePatientListPage() {
               </div>
             </div>
             <div className="patient-list-actions">
-              <button className="btn-secondary" onClick={() => navigate(`/nurse/patients/${p.patientId}/chat`)}>💬</button>
+              <button className="btn-secondary" onClick={() => navigate(`/nurse/chat/${p.patientId}`)}>💬</button>
               <button className="btn-primary" onClick={() => navigate(`/nurse/patients/${p.patientId}`)}>เปิดดู</button>
             </div>
           </div>

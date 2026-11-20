@@ -1,5 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useAccessibility } from '../../context/AccessibilityContext.jsx';
 import NotificationSettingsLink from '../../components/notification/NotificationSettingsLink.jsx';
@@ -17,7 +18,7 @@ const relationshipMap = {
 export default function CaregiverProfilePage() {
   const { user, logout } = useAuth();
   const { link } = useOutletContext();
-  const { fontSize, setFontSize, theme, setTheme, FONT_SIZE_OPTIONS, THEME_OPTIONS } = useAccessibility();
+  const { fontSize, setFontSize, theme, setTheme } = useAccessibility();
 
   
   
@@ -49,8 +50,8 @@ export default function CaregiverProfilePage() {
         <div className="setting-row">
           <label className="form-label">ธีมสี</label>
           <div className="setting-options">
-            <button className={`setting-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>☀️ สว่าง</button>
-            <button className={`setting-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>🌙 มืด</button>
+            <button className={`setting-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}><Sun size={16} className="inline-icon" /> สว่าง</button>
+            <button className={`setting-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}><Moon size={16} className="inline-icon" /> มืด</button>
           </div>
         </div>
       </section>

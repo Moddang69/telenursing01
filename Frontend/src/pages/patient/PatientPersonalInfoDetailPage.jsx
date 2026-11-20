@@ -17,13 +17,11 @@ export default function PatientPersonalInfoDetailPage() {
 
   // 2. ฟังก์ชันสำหรับจัดการการแสดงผลผู้ดูแล
   const getCaregiverDisplay = () => {
-    if (!user?.caregiverName) return '-';
-    // ถ้าระบุว่า "อื่นๆ" ให้ดึงข้อความที่พิมพ์ไว้ใน caregiverOther มาแสดง
-    if (user.caregiverName === 'other') {
-      return user.caregiverOther ? `อื่นๆ (${user.caregiverOther})` : 'อื่นๆ';
+    if (!user?.caregiverRelationship) return '-';
+    if (user.caregiverRelationship === 'other') {
+      return user.caregiverRelationshipOther ? `อื่นๆ (${user.caregiverRelationshipOther})` : 'อื่นๆ';
     }
-    // แปลงค่าภาษาอังกฤษเป็นไทยผ่าน relationshipMap
-    return relationshipMap[user.caregiverName] || user.caregiverName;
+    return relationshipMap[user.caregiverRelationship] || user.caregiverRelationship;
   };
 
   const fields = [

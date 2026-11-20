@@ -4,7 +4,7 @@ import './BottomNav.css';
 
 /**
  * BottomNav — ใช้ร่วมกันระหว่าง Patient / Caregiver
- * @param {Array<{to:string, label:string, icon:string}>} items
+ * @param {Array<{to:string, label:string, icon:React.ComponentType|string}>} items
  */
 export default function BottomNav({ items }) {
   return (
@@ -15,7 +15,9 @@ export default function BottomNav({ items }) {
           to={item.to}
           className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
         >
-          <span className="bottom-nav-icon" aria-hidden="true">{item.icon}</span>
+          <span className="bottom-nav-icon" aria-hidden="true">
+            {typeof item.icon === 'string' ? item.icon : <item.icon size={22} />}
+          </span>
           <span className="bottom-nav-label">{item.label}</span>
         </NavLink>
       ))}

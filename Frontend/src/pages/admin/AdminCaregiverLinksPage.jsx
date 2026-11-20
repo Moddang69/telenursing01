@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Handshake } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { caregiverService } from '../../services/caregiverService.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
@@ -71,7 +72,7 @@ export default function AdminCaregiverLinksPage() {
       <p className="page-subtitle">อนุมัติหรือปฏิเสธคำขอเชื่อมโยงระหว่างผู้ดูแลและผู้ป่วยที่รออยู่</p>
 
       {links.length === 0 ? (
-        <EmptyState icon="🤝" title="ไม่มีคำขอเชื่อมโยงที่รออนุมัติ" />
+        <EmptyState icon={Handshake} title="ไม่มีคำขอเชื่อมโยงที่รออนุมัติ" />
       ) : (
         <div className="link-request-list">
           {links.map((l) => (

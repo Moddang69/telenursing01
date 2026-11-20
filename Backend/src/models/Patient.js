@@ -48,7 +48,6 @@ const patientSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-patientSchema.index({ hn: 1 }, { unique: true });
 patientSchema.index({ assignedNurseId: 1 });
 
 export default mongoose.model('Patient', patientSchema);

@@ -49,8 +49,9 @@ export async function createOrGetSession(appointmentId) {
   return res.data;
 }
 
-export async function endSession(appointmentId, consultationNote) {
-  const res = await apiClient.patch(`/video-sessions/${appointmentId}/end`, { consultationNote });
+// wasConnected: เคยเชื่อมต่อกับอีกฝั่งจริงแล้วหรือไม่ — ถ้ายัง Backend จะไม่ปิดนัดหมาย (เป็นแค่การออกจากห้อง)
+export async function endSession(appointmentId, consultationNote, wasConnected = false) {
+  const res = await apiClient.patch(`/video-sessions/${appointmentId}/end`, { consultationNote, wasConnected });
   return res.data;
 }
 
@@ -70,8 +71,18 @@ export function sendConnectionState(appointmentId, state) {
   getSocket()?.emit('connection-state-change', { appointmentId, state });
 }
 
-export function endCall(appointmentId, consultationNote) {
-  getSocket()?.emit('end-call', { appointmentId, consultationNote });
+// คืน Promise<{ ok, completed } | null> — completed=false หมายถึงแค่ออกจากห้อง (คู่สนทนายังไม่เคยเชื่อมต่อ) เข้าร่วมใหม่ได้
+// null = ไม่ได้รับคำตอบจากเซิร์ฟเวอร์ภายใน 4 วินาที (ผู้เรียกใช้ค่าที่ client รู้เอง)
+export function endCall(appointmentId, consultationNote, wasConnected = false) {
+  const socket = getSocket();
+  if (!socket) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), 4000);
+    socket.emit('end-call', { appointmentId, consultationNote, wasConnected }, (res) => {
+      clearTimeout(timer);
+      resolve(res || null);
+    });
+  });
 }
 
 // สมัครรับ call-ended แล้วคืนฟังก์ชันยกเลิก (ไม่ไปลบ listener ของที่อื่น)

@@ -37,6 +37,8 @@ const videoSessionSchema = new mongoose.Schema(
       default: 'WAITING_FOR_NURSE',
     },
     startedAt: { type: Date, default: null },
+    // เวลาที่ 2 ฝั่งเชื่อมต่อกันได้จริงครั้งแรก — ใช้แยก "คุยกันแล้ว" (จบ = COMPLETED) ออกจาก "คู่สนทนาไม่เข้า แล้วกดวาง" (ยังเข้าใหม่ได้)
+    connectedAt: { type: Date, default: null },
     endedAt: { type: Date, default: null },
     consultationNote: { type: String, default: null },
     // CONFIGURABLE — ค่า default สำหรับ Prototype เท่านั้น ต้องตรวจสอบนโยบายจริงก่อนใช้งานจริง
@@ -48,7 +50,6 @@ const videoSessionSchema = new mongoose.Schema(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-videoSessionSchema.index({ appointmentId: 1 }, { unique: true });
 videoSessionSchema.index({ nurseId: 1, startedAt: -1 });
 videoSessionSchema.index({ createdAt: 1 }); // Retention purge
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { withdrawConsentImpacts } from '../../data/mockConsentContent.js';
 import { consentService } from '../../services/consentService.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -43,7 +44,7 @@ export default function ConsentWithdrawalDialog({ onClose, onWithdrawn }) {
           ))}
         </ul>
         <p style={{ fontWeight: 600, color: 'var(--color-danger)' }}>
-          ⚠️ หลังถอนความยินยอม ท่านจะไม่สามารถบันทึกข้อมูลใหม่ได้ และต้องยินยอมใหม่อีกครั้งหากต้องการใช้งานระบบต่อ
+          <AlertTriangle size={16} className="inline-icon" /> หลังถอนความยินยอม ท่านจะไม่สามารถบันทึกข้อมูลใหม่ได้ และต้องยินยอมใหม่อีกครั้งหากต้องการใช้งานระบบต่อ
         </p>
         <label className="form-label" htmlFor="withdraw-reason">เหตุผล (ไม่บังคับ)</label>
         <textarea

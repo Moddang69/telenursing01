@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useAccessibility } from '../../context/AccessibilityContext.jsx';
+import { Sun, Moon } from 'lucide-react';
 import NotificationSettingsLink from '../../components/notification/NotificationSettingsLink.jsx';
 import { ROUTES } from '../../constants/routes.js';
 import './NurseProfilePage.css';
@@ -34,8 +35,12 @@ export default function NurseProfilePage() {
         <div className="setting-row">
           <label className="form-label">ธีมสี</label>
           <div className="setting-options">
-            <button className={`setting-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>☀️ สว่าง</button>
-            <button className={`setting-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>🌙 มืด</button>
+            <button className={`setting-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>
+              <Sun size={16} className="inline-icon" /> สว่าง
+            </button>
+            <button className={`setting-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>
+              <Moon size={16} className="inline-icon" /> มืด
+            </button>
           </div>
         </div>
       </section>

@@ -4,6 +4,8 @@ import { validators } from '../../utils/validators.js';
 import { ROUTES } from '../../constants/routes.js';
 import { authService } from '../../services/authService.js';
 import { patientConsentFullText } from '../../data/mockPatientConsentFullText.js';
+import AvailabilityHint from '../../components/common/AvailabilityHint.jsx';
+import { useAvailabilityCheck } from '../../hooks/useAvailabilityCheck.js';
 import '../auth/AuthForm.css';
 import './PatientRegistrationPage.css';
 import { Link } from 'react-router-dom';
@@ -29,6 +31,10 @@ export default function PatientRegistrationPage() {
     address: '',
     comorbidities: '',
     drugAllergies: '',
+    // ฟิลด์ที่ฟอร์มใช้แต่เดิมไม่มีค่าเริ่มต้น (ทำให้ React เตือน uncontrolled → controlled)
+    hospital: '',
+    emergencyContact: '',
+    secondaryContactNumber: '',
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,18 +42,46 @@ export default function PatientRegistrationPage() {
   const [agreedConsent, setAgreedConsent] = useState(false);
   const [consentError, setConsentError] = useState('');
 
-  const handleChange = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const [touched, setTouched] = useState({});
+  const hnCheck = useAvailabilityCheck('hn');
+
+  // กฎตรวจแต่ละช่อง — ใช้ทั้งตอนกรอกเสร็จ (blur) และตอนกดถัดไป
+  const RULES = {
+    firstName: (f) => validators.required(f.firstName, 'ชื่อ'),
+    lastName: (f) => validators.required(f.lastName, 'นามสกุล'),
+    dob: (f) =>
+      validators.required(f.dob, 'วันเดือนปีเกิด') ||
+      validators.date(f.dob) ||
+      (new Date(f.dob) > new Date() ? 'วันเดือนปีเกิดต้องไม่เป็นวันในอนาคต' : ''),
+    gender: (f) => validators.required(f.gender, 'เพศ'),
+    hn: (f) => validators.required(f.hn, 'HN'),
+    phone: (f) => validators.required(f.phone, 'เบอร์โทรศัพท์') || validators.phone(f.phone.trim()),
+    secondaryContactNumber: (f) => (f.secondaryContactNumber ? validators.phone(f.secondaryContactNumber.trim()) : ''),
+  };
+
+  // อัปเดตค่า แล้วตรวจซ้ำทันทีถ้าช่องนั้นเคยกรอกเสร็จแล้ว (ข้อความผิดพลาดจะหายเองเมื่อแก้ถูก)
+  const handleChange = (field) => (e) => {
+    const next = { ...form, [field]: e.target.value };
+    setForm(next);
+    if (touched[field] && RULES[field]) setErrors((prev) => ({ ...prev, [field]: RULES[field](next) }));
+    if (field === 'hn') hnCheck.reset();
+  };
+
+  // กรอกช่องนั้นเสร็จ (ออกจากช่อง) → ตรวจและแสดงผลทันที (HN ตรวจว่าซ้ำในระบบด้วย)
+  const handleBlur = (field) => () => {
+    setTouched((t) => ({ ...t, [field]: true }));
+    const message = RULES[field](form);
+    setErrors((prev) => ({ ...prev, [field]: message }));
+    if (field === 'hn' && !message) hnCheck.check(form.hn.trim());
+  };
 
   const validateAll = () => {
-    const newErrors = {
-      firstName: validators.required(form.firstName, 'ชื่อ'),
-      lastName: validators.required(form.lastName, 'นามสกุล'),
-      dob: validators.required(form.dob, 'วันเดือนปีเกิด') || validators.date(form.dob),
-      gender: validators.required(form.gender, 'เพศ'),
-      hn: validators.required(form.hn, 'HN'),
-      phone: validators.required(form.phone, 'เบอร์โทรศัพท์') || validators.phone(form.phone),
-    };
+    const newErrors = {};
+    Object.keys(RULES).forEach((k) => {
+      newErrors[k] = RULES[k](form);
+    });
     setErrors(newErrors);
+    setTouched(Object.fromEntries(Object.keys(RULES).map((k) => [k, true])));
     return Object.values(newErrors).every((v) => !v);
   };
 
@@ -55,6 +89,12 @@ export default function PatientRegistrationPage() {
     e.preventDefault();
     setSubmitError('');
     if (!validateAll()) return;
+    // HN นี้ถูกลงทะเบียนไปแล้วหรือไม่ (ข้อความแสดงใต้ช่อง HN)
+    const hnStatus = await hnCheck.ensure(form.hn.trim());
+    if (hnStatus === 'taken') {
+      document.getElementById('hn')?.focus();
+      return;
+    }
     if (!agreedConsent) {
       setConsentError('ท่านต้องยินยอมตามนโยบายก่อนดำเนินการต่อ');
       return;
@@ -125,13 +165,13 @@ export default function PatientRegistrationPage() {
             <div className="form-group">
               <label htmlFor="firstName" className="form-label">ชื่อ</label>
               <input id="firstName" className={`form-input ${errors.firstName ? 'input-error' : ''}`}
-                placeholder="ชื่อจริง" value={form.firstName} onChange={handleChange('firstName')} />
+                placeholder="ชื่อจริง" value={form.firstName} onChange={handleChange('firstName')} onBlur={handleBlur('firstName')} />
               {errors.firstName && <span className="form-error-message">{errors.firstName}</span>}
             </div>
             <div className="form-group">
               <label htmlFor="lastName" className="form-label">นามสกุล</label>
               <input id="lastName" className={`form-input ${errors.lastName ? 'input-error' : ''}`}
-                placeholder="นามสกุล" value={form.lastName} onChange={handleChange('lastName')} />
+                placeholder="นามสกุล" value={form.lastName} onChange={handleChange('lastName')} onBlur={handleBlur('lastName')} />
               {errors.lastName && <span className="form-error-message">{errors.lastName}</span>}
             </div>
           </div>
@@ -140,13 +180,13 @@ export default function PatientRegistrationPage() {
             <div className="form-group">
               <label htmlFor="dob" className="form-label">วันเดือนปีเกิด</label>
               <input id="dob" type="date" className={`form-input ${errors.dob ? 'input-error' : ''}`}
-                value={form.dob} onChange={handleChange('dob')} />
+                value={form.dob} onChange={handleChange('dob')} onBlur={handleBlur('dob')} />
               {errors.dob && <span className="form-error-message">{errors.dob}</span>}
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="gender">เพศ</label>
               <select id="gender" className={`form-input ${errors.gender ? 'input-error' : ''}`}
-                value={form.gender} onChange={handleChange('gender')}>
+                value={form.gender} onChange={handleChange('gender')} onBlur={handleBlur('gender')}>
                 <option value="">-- เลือกเพศ --</option>
                 <option value="male">ชาย</option>
                 <option value="female">หญิง</option>
@@ -157,9 +197,17 @@ export default function PatientRegistrationPage() {
 
           <div className="form-group">
             <label htmlFor="hn" className="form-label">HN (Hospital Number)</label>
-            <input id="hn" className={`form-input ${errors.hn ? 'input-error' : ''}`}
-              placeholder="เช่น HN-00123" value={form.hn} onChange={handleChange('hn')} />
-            {errors.hn && <span className="form-error-message">{errors.hn}</span>}
+            <input id="hn" className={`form-input ${errors.hn || hnCheck.status === 'taken' ? 'input-error' : ''}`}
+              placeholder="เช่น HN-00123" value={form.hn} onChange={handleChange('hn')} onBlur={handleBlur('hn')} />
+            {errors.hn ? (
+              <span className="form-error-message">{errors.hn}</span>
+            ) : (
+              <AvailabilityHint
+                check={hnCheck}
+                availableText="HN นี้ยังไม่เคยลงทะเบียน"
+                takenText="HN นี้ถูกลงทะเบียนในระบบแล้ว หากเป็น HN ของท่านกรุณาเข้าสู่ระบบ หรือติดต่อเจ้าหน้าที่"
+              />
+            )}
           </div>
 
           <div className="form-group">
@@ -172,7 +220,7 @@ export default function PatientRegistrationPage() {
             <div className="form-group">
               <label htmlFor="phone" className="form-label">เบอร์โทรศัพท์</label>
               <input id="phone" className={`form-input ${errors.phone ? 'input-error' : ''}`}
-                placeholder="กรุณาระบุเบอร์โทรศัพท์ของคุณ" value={form.phone} onChange={handleChange('phone')} />
+                placeholder="กรุณาระบุเบอร์โทรศัพท์ของคุณ" value={form.phone} onChange={handleChange('phone')} onBlur={handleBlur('phone')} />
               {errors.phone && <span className="form-error-message">{errors.phone}</span>}
             </div>
 
@@ -186,8 +234,9 @@ export default function PatientRegistrationPage() {
             </div>
             <div className="form-group">
             <label htmlFor="secondaryContactNumber" className="form-label">เบอร์โทรศัพท์ผู้ติดต่อฉุกเฉิน</label>
-            <input id="secondaryContactNumber" className="form-input"
-              placeholder="กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อฉุกเฉินของคุณ" value={form.secondaryContactNumber} onChange={handleChange('secondaryContactNumber')} />
+            <input id="secondaryContactNumber" className={`form-input ${errors.secondaryContactNumber ? 'input-error' : ''}`}
+              placeholder="กรุณาระบุเบอร์โทรศัพท์ผู้ติดต่อฉุกเฉินของคุณ" value={form.secondaryContactNumber} onChange={handleChange('secondaryContactNumber')} onBlur={handleBlur('secondaryContactNumber')} />
+            {errors.secondaryContactNumber && <span className="form-error-message">{errors.secondaryContactNumber}</span>}
             </div>
         </div>
 

@@ -1,0 +1,4 @@
+/* src/components/common/AvailabilityHint.css */
+.field-hint { display: block; margin-top: 4px; font-size: var(--font-size-xs); color: var(--color-text-muted); }
+.field-hint.ok { color: var(--color-normal); font-weight: 700; }
+.field-link-btn { margin-left: 6px; padding: 0; border: none; background: none; color: var(--color-primary-dark); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }

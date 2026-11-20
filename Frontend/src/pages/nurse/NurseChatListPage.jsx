@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useNurseConversations } from '../../hooks/useNurseConversations.js';
 import { ROUTES } from '../../constants/routes.js';
@@ -37,7 +38,7 @@ export default function NurseChatListPage() {
       <h2>แชทผู้ป่วย</h2>
 
       {conversations.length === 0 ? (
-        <EmptyState icon="💬" title="ยังไม่มีการสนทนากับผู้ป่วย" />
+        <EmptyState icon={MessageCircle} title="ยังไม่มีการสนทนากับผู้ป่วย" />
       ) : (
         <div className="nurse-chat-rows">
           {conversations.map((c) => {

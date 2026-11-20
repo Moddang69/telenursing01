@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import ToastStack from '../components/common/ToastStack.jsx';
 
 const NotificationContext = createContext(null);
 
@@ -25,6 +26,7 @@ export function NotificationProvider({ children }) {
   return (
     <NotificationContext.Provider value={{ toasts, showToast, dismissToast }}>
       {children}
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </NotificationContext.Provider>
   );
 }

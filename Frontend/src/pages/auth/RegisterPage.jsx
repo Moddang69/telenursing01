@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { validators } from '../../utils/validators.js';
 import PasswordStrengthMeter from '../../components/common/PasswordStrengthMeter.jsx';
+import AvailabilityHint from '../../components/common/AvailabilityHint.jsx';
+import { useAvailabilityCheck } from '../../hooks/useAvailabilityCheck.js';
 import { authService } from '../../services/authService.js';
 import { ROLES } from '../../constants/roles.js';
 import { ROUTES } from '../../constants/routes.js';
@@ -13,15 +15,24 @@ const roleOptions = [
   { value: ROLES.NURSE, label: 'พยาบาล' },
 ];
 
+// กฎตรวจแต่ละช่อง — ใช้ทั้งตอนกรอกเสร็จ (blur) และตอนกดถัดไป
+const RULES = {
+  firstName: (f) => validators.required(f.firstName, 'ชื่อ'),
+  lastName: (f) => validators.required(f.lastName, 'นามสกุล'),
+  email: (f) => validators.required(f.email, 'อีเมล') || validators.email(f.email.trim()),
+  phone: (f) => validators.required(f.phone, 'เบอร์โทรศัพท์') || validators.phone(f.phone.trim()),
+  password: (f) => validators.required(f.password, 'รหัสผ่าน') || validators.password(f.password),
+  confirmPassword: (f) =>
+    validators.required(f.confirmPassword, 'ยืนยันรหัสผ่าน') || validators.confirmPassword(f.confirmPassword, f.password),
+  role: (f) => validators.required(f.role, 'ประเภทผู้ใช้งาน'),
+};
+
 /**
  * Step 1 ของการลงทะเบียน — เก็บเฉพาะข้อมูลบัญชี (ไม่รวม HN/วันเกิด/เพศ หรือเลขใบประกอบวิชาชีพ/
  * โรงพยาบาล) แล้วส่งต่อไปหน้าลงทะเบียนเฉพาะ Role (Step 2) ที่จะกรอกข้อมูลโปรไฟล์ให้ครบ +
  * ให้ยืนยันยินยอมนโยบาย/รักษาความลับ ก่อนจึงเรียก authService.register() จริง (ที่หน้านั้น)
  *
- * 🔧 (แก้ครั้งก่อนหน้า): เคยลองให้หน้านี้ navigate ไป /patient/registration แล้วพังเพราะ Route ปลายทาง
- * ถูกครอบ ProtectedRoute (ต้อง login ก่อนถึงเข้าได้ ทั้งที่ตอนนั้นยังไม่มีบัญชีเลย) — ตอนนี้แก้ที่ต้นตอ
- * แล้วใน AppRoutes.jsx (เอา ProtectedRoute ออกจาก Route นั้น ให้เป็นสาธารณะเหมือนฝั่งพยาบาลที่ถูกต้อง
- * อยู่แล้ว) จึง navigate มาที่นี่ได้อย่างปลอดภัยแล้ว
+ * ตรวจแต่ละช่องทันทีเมื่อกรอกเสร็จ (blur): รูปแบบไม่ถูกต้อง / อีเมลถูกใช้งานแล้ว ฯลฯ — ไม่ต้องรอกดถัดไป
  *
  * Flow เต็ม: RegisterPage (บัญชี+เลือก Role) → [Patient/Nurse]RegistrationPage (โปรไฟล์ครบ+consent)
  *   → register() จริง → OTP → Login → (ผู้ป่วย: เลือกพยาบาล / พยาบาล: รอ Admin อนุมัติ) → ใช้งานได้
@@ -33,59 +44,52 @@ export default function RegisterPage() {
     role: '', phone: '',
   });
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const emailCheck = useAvailabilityCheck('email');
 
-  const handleChange = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
-
-  const validateAll = () => {
-    const newErrors = {
-      firstName: validators.required(form.firstName, 'ชื่อ'),
-      lastName: validators.required(form.lastName, 'นามสกุล'),
-      email: validators.required(form.email, 'อีเมล') || validators.email(form.email),
-      password: validators.required(form.password, 'รหัสผ่าน') || validators.password(form.password),
-      confirmPassword:
-        validators.required(form.confirmPassword, 'ยืนยันรหัสผ่าน') ||
-        validators.confirmPassword(form.confirmPassword, form.password),
-      role: validators.required(form.role, 'ประเภทผู้ใช้งาน'),
-      phone: validators.required(form.phone, 'เบอร์โทรศัพท์'),
-    };
-    setErrors(newErrors);
-    return Object.values(newErrors).every((v) => !v);
+  // อัปเดตค่า แล้วตรวจซ้ำทันทีถ้าช่องนั้นเคยกรอกเสร็จแล้ว (ข้อความผิดพลาดจะหายเองเมื่อแก้ถูก)
+  const setField = (field, value, validateNow = false) => {
+    const next = { ...form, [field]: value };
+    setForm(next);
+    setErrors((prev) => {
+      const upd = { ...prev };
+      if (validateNow || touched[field]) upd[field] = RULES[field](next);
+      if (field === 'password' && touched.confirmPassword) upd.confirmPassword = RULES.confirmPassword(next);
+      return upd;
+    });
+    if (field === 'email') emailCheck.reset();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleChange = (field) => (e) => setField(field, e.target.value);
+
+  // กรอกช่องนั้นเสร็จ (ออกจากช่อง) → ตรวจและแสดงผลทันที
+  const handleBlur = (field) => () => {
+    setTouched((t) => ({ ...t, [field]: true }));
+    const message = RULES[field](form);
+    setErrors((prev) => ({ ...prev, [field]: message }));
+    if (field === 'email' && !message) emailCheck.check(form.email.trim());
+  };
+
+  const validateAll = () => {
+    const all = {};
+    Object.keys(RULES).forEach((k) => {
+      all[k] = RULES[k](form);
+    });
+    setErrors(all);
+    setTouched(Object.fromEntries(Object.keys(RULES).map((k) => [k, true])));
+    return Object.values(all).every((v) => !v);
+  };
+
+  // อีเมลเคยลงทะเบียนแต่ยังไม่ยืนยัน OTP → ไปยืนยันต่อได้เลย
+  const handleResumeOtp = async () => {
     setSubmitError('');
-    if (!validateAll()) return;
-
-    const accountData = {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
-      password: form.password,
-      phone: form.phone,
-      role: form.role,
-    };
-
-    // ผู้ป่วย/พยาบาล ต้องกรอกโปรไฟล์เฉพาะทาง + ยอมรับนโยบายก่อน จึงจะสร้างบัญชีจริงได้ (Step 2)
-    if (form.role === ROLES.PATIENT) {
-      navigate(ROUTES.PATIENT_REGISTRATION, { state: { accountData } });
-      return;
-    }
-    if (form.role === ROLES.NURSE) {
-      navigate('/nurse/registration', { state: { accountData } });
-      return;
-    }
-
-    // ผู้ดูแล (Caregiver) — Caregiver model ไม่มี field บังคับเพิ่มเติมนอกจากที่กรอกครบแล้วในหน้านี้
-    // จึง register() ได้ทันที ไม่ต้องมีหน้าโปรไฟล์แยก
     setIsSubmitting(true);
     try {
-      await authService.register(accountData);
-      await authService.requestOtp(form.email);
+      await authService.requestOtp(form.email.trim(), 'REGISTER');
       navigate(ROUTES.REGISTER + '/otp', {
-        state: { email: form.email, flow: 'register', postVerifyRoute: ROUTES.LOGIN },
+        state: { email: form.email.trim(), flow: 'register', postVerifyRoute: ROUTES.LOGIN },
       });
     } catch (err) {
       setSubmitError(err.message);
@@ -93,6 +97,55 @@ export default function RegisterPage() {
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+    if (!validateAll()) return;
+
+    setIsSubmitting(true);
+    try {
+      // กันกรณีกดถัดไปเร็วก่อนตรวจอีเมลเสร็จ / อีเมลถูกใช้ไปแล้ว (ข้อความแสดงใต้ช่องอีเมล)
+      const emailStatus = await emailCheck.ensure(form.email.trim());
+      if (emailStatus === 'taken') {
+        document.getElementById('email')?.focus();
+        return;
+      }
+
+      const accountData = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        phone: form.phone.trim(),
+        role: form.role,
+      };
+
+      // ผู้ป่วย/พยาบาล ต้องกรอกโปรไฟล์เฉพาะทาง + ยอมรับนโยบายก่อน จึงจะสร้างบัญชีจริงได้ (Step 2)
+      if (form.role === ROLES.PATIENT) {
+        navigate(ROUTES.PATIENT_REGISTRATION, { state: { accountData } });
+        return;
+      }
+      if (form.role === ROLES.NURSE) {
+        navigate('/nurse/registration', { state: { accountData } });
+        return;
+      }
+
+      // ผู้ดูแล (Caregiver) — Caregiver model ไม่มี field บังคับเพิ่มเติมนอกจากที่กรอกครบแล้วในหน้านี้
+      // จึง register() ได้ทันที ไม่ต้องมีหน้าโปรไฟล์แยก
+      await authService.register(accountData);
+      await authService.requestOtp(accountData.email);
+      navigate(ROUTES.REGISTER + '/otp', {
+        state: { email: accountData.email, flow: 'register', postVerifyRoute: ROUTES.LOGIN },
+      });
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const emailInvalid = errors.email || emailCheck.status === 'taken';
 
   return (
     <main className="auth-page">
@@ -112,6 +165,7 @@ export default function RegisterPage() {
                 placeholder="เช่น สมชาย"
                 value={form.firstName}
                 onChange={handleChange('firstName')}
+                onBlur={handleBlur('firstName')}
               />
               {errors.firstName && <span className="form-error-message">{errors.firstName}</span>}
             </div>
@@ -123,6 +177,7 @@ export default function RegisterPage() {
                 placeholder="เช่น ใจดี"
                 value={form.lastName}
                 onChange={handleChange('lastName')}
+                onBlur={handleBlur('lastName')}
               />
               {errors.lastName && <span className="form-error-message">{errors.lastName}</span>}
             </div>
@@ -133,12 +188,29 @@ export default function RegisterPage() {
             <input
               id="email"
               type="email"
-              className={`form-input ${errors.email ? 'input-error' : ''}`}
+              autoComplete="email"
+              className={`form-input ${emailInvalid ? 'input-error' : ''}`}
               placeholder="เช่น somchai@example.com"
               value={form.email}
               onChange={handleChange('email')}
+              onBlur={handleBlur('email')}
             />
-            {errors.email && <span className="form-error-message">{errors.email}</span>}
+            {errors.email ? (
+              <span className="form-error-message">{errors.email}</span>
+            ) : (
+              <AvailabilityHint
+                check={emailCheck}
+                availableText="อีเมลนี้ใช้ลงทะเบียนได้"
+                takenText="อีเมลนี้ถูกใช้งานแล้ว"
+                takenAction={<Link to={ROUTES.LOGIN} className="auth-link">เข้าสู่ระบบ</Link>}
+                unverifiedText="อีเมลนี้เคยลงทะเบียนไว้แล้วแต่ยังไม่ได้ยืนยัน OTP"
+                unverifiedAction={
+                  <button type="button" className="field-link-btn" onClick={handleResumeOtp} disabled={isSubmitting}>
+                    ยืนยัน OTP ตอนนี้
+                  </button>
+                }
+              />
+            )}
           </div>
 
           <div className="form-group">
@@ -150,6 +222,7 @@ export default function RegisterPage() {
               placeholder="เช่น 0812345678"
               value={form.phone}
               onChange={handleChange('phone')}
+              onBlur={handleBlur('phone')}
             />
             {errors.phone && <span className="form-error-message">{errors.phone}</span>}
           </div>
@@ -159,10 +232,12 @@ export default function RegisterPage() {
             <input
               id="password"
               type="password"
+              autoComplete="new-password"
               className={`form-input ${errors.password ? 'input-error' : ''}`}
               placeholder="อย่างน้อย 8 ตัวอักษร มีตัวพิมพ์ใหญ่และตัวเลข"
               value={form.password}
               onChange={handleChange('password')}
+              onBlur={handleBlur('password')}
             />
             <PasswordStrengthMeter password={form.password} />
             {errors.password && <span className="form-error-message">{errors.password}</span>}
@@ -173,10 +248,12 @@ export default function RegisterPage() {
             <input
               id="confirmPassword"
               type="password"
+              autoComplete="new-password"
               className={`form-input ${errors.confirmPassword ? 'input-error' : ''}`}
               placeholder="กรอกรหัสผ่านอีกครั้ง"
               value={form.confirmPassword}
               onChange={handleChange('confirmPassword')}
+              onBlur={handleBlur('confirmPassword')}
             />
             {errors.confirmPassword && <span className="form-error-message">{errors.confirmPassword}</span>}
           </div>
@@ -191,7 +268,10 @@ export default function RegisterPage() {
                     name="role"
                     value={opt.value}
                     checked={form.role === opt.value}
-                    onChange={handleChange('role')}
+                    onChange={(e) => {
+                      setTouched((t) => ({ ...t, role: true }));
+                      setField('role', e.target.value, true);
+                    }}
                   />
                   {opt.label}
                 </label>

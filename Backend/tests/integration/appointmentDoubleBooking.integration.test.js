@@ -4,24 +4,31 @@ import authService from '../../src/services/auth.service.js';
 import careTeamService from '../../src/services/careTeam.service.js';
 import { Nurse } from '../../src/models/index.js';
 import { generateToken } from '../../src/utils/generateToken.js';
+import { ensureCollections, futureDate } from '../helpers/ensureCollections.js';
 
 describe('Appointment Double-booking Prevention — Integration Test (Phase 11.13)', () => {
+  beforeAll(async () => {
+    await ensureCollections();
+  });
+
   test('ควรได้ 409 เมื่อจอง Nurse คนเดียวกันเวลาเดียวกันซ้ำ', async () => {
+    const date = futureDate(7);
+
     const nurseResult = await authService.registerUser({
-      email: 'apptNurse@example.com',
+      email: 'nurse.appt001@example.com',
       password: 'Passw0rd1',
       role: 'nurse',
-      profile: { firstName: 'นัด', lastName: 'หมาย', phone: '0866666666', licenseNumber: 'NUR-APPT-001', hospital: 'Test' },
+      profile: { firstName: 'นัด', lastName: 'หมาย', phone: '[Masked Phone]', licenseNumber: 'NUR-APPT-001', hospital: 'Test' },
     });
     await Nurse.findByIdAndUpdate(nurseResult.roleRefId, { $set: { approvalStatus: 'APPROVED' } });
 
     const patientA = await authService.registerUser({
-      email: 'apptPatientA@example.com', password: 'Passw0rd1', role: 'patient',
-      profile: { firstName: 'A', lastName: 'Test', hn: 'HN-APPT-A', dob: '1980-01-01', gender: 'male', phone: '0877777777' },
+      email: 'patient.appt001a@example.com', password: 'Passw0rd1', role: 'patient',
+      profile: { firstName: 'A', lastName: 'Test', hn: 'HN-APPT-A', dob: '1980-01-01', gender: 'male', phone: '[Masked Phone]' },
     });
     const patientB = await authService.registerUser({
-      email: 'apptPatientB@example.com', password: 'Passw0rd1', role: 'patient',
-      profile: { firstName: 'B', lastName: 'Test', hn: 'HN-APPT-B', dob: '1980-01-01', gender: 'male', phone: '0888888888' },
+      email: 'patient.appt001b@example.com', password: 'Passw0rd1', role: 'patient',
+      profile: { firstName: 'B', lastName: 'Test', hn: 'HN-APPT-B', dob: '1980-01-01', gender: 'male', phone: '[Masked Phone]' },
     });
 
     await careTeamService.assignNurse({ patientId: patientA.roleRefId, nurseId: nurseResult.roleRefId, assignedByUserId: patientA.userId });
@@ -33,13 +40,13 @@ describe('Appointment Double-booking Prevention — Integration Test (Phase 11.1
     const first = await request(app)
       .post(`/api/appointments/${patientA.roleRefId}`)
       .set('Authorization', `Bearer ${tokenA}`)
-      .send({ nurseId: nurseResult.roleRefId, date: '2026-09-10', time: '10:00', reason: 'test' });
+      .send({ nurseId: nurseResult.roleRefId, date, time: '10:00', reason: 'test' });
     expect(first.status).toBe(201);
 
     const second = await request(app)
       .post(`/api/appointments/${patientB.roleRefId}`)
       .set('Authorization', `Bearer ${tokenB}`)
-      .send({ nurseId: nurseResult.roleRefId, date: '2026-09-10', time: '10:00', reason: 'conflict test' });
+      .send({ nurseId: nurseResult.roleRefId, date, time: '10:00', reason: 'conflict test' });
 
     expect(second.status).toBe(409);
     expect(second.body.message).toContain('มีนัดหมายอื่นอยู่แล้ว');

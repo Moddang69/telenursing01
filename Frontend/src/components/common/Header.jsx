@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 import NotificationBell from './NotificationBell.jsx';
 import HeaderSearch from './HeaderSearch.jsx';
 import ChatPushPrompt from './ChatPushPrompt.jsx';
@@ -52,7 +53,7 @@ export default function Header({ title, chat = null }) {
               aria-label={chatUnread > 0 ? `แชท (${chatUnread} ข้อความที่ยังไม่ได้อ่าน)` : 'แชท'}
               onClick={() => navigate(chat.to)}
             >
-              💬
+              <MessageCircle size={20} />
               {chatUnread > 0 && <span className="header-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}
             </button>
             {/* ชวนเปิดแจ้งเตือนแชทบนอุปกรณ์นี้ (Web Push) — แสดงเมื่ออยู่หน้าแชทหรือมีข้อความค้างอ่าน */}

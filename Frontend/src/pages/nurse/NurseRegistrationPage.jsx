@@ -5,6 +5,8 @@ import { validators } from '../../utils/validators.js';
 import { ROUTES } from '../../constants/routes.js';
 import { authService } from '../../services/authService.js';
 import { CONFIDENTIALITY_VERSION } from '../../data/mockConfidentialityContent.js';
+import AvailabilityHint from '../../components/common/AvailabilityHint.jsx';
+import { useAvailabilityCheck } from '../../hooks/useAvailabilityCheck.js';
 
 import '../auth/AuthForm.css';
 
@@ -38,44 +40,42 @@ export default function NurseRegistrationPage() {
   // Error จาก Backend
   const [submitError, setSubmitError] = useState('');
 
+  const [touched, setTouched] = useState({});
+  const licenseCheck = useAvailabilityCheck('licenseNumber');
+
+  // กฎตรวจแต่ละช่อง — ใช้ทั้งตอนกรอกเสร็จ (blur) และตอนกดบันทึก
+  const RULES = {
+    firstName: (f) => validators.required(f.firstName, 'ชื่อ'),
+    lastName: (f) => validators.required(f.lastName, 'นามสกุล'),
+    phone: (f) => validators.required(f.phone, 'เบอร์โทรศัพท์') || validators.phone(f.phone.trim()),
+    licenseNumber: (f) => validators.required(f.licenseNumber, 'เลขที่ใบอนุญาตประกอบวิชาชีพ'),
+    hospital: (f) => validators.required(f.hospital, 'โรงพยาบาล/สถานพยาบาล'),
+  };
+
+  // อัปเดตค่า แล้วตรวจซ้ำทันทีถ้าช่องนั้นเคยกรอกเสร็จแล้ว (ข้อความผิดพลาดจะหายเองเมื่อแก้ถูก)
   const handleChange = (field) => (e) => {
-    setForm((f) => ({
-      ...f,
-      [field]: e.target.value,
-    }));
-
-    // ล้าง error ของ field นั้นเมื่อผู้ใช้แก้ไข
-    setErrors((prev) => ({
-      ...prev,
-      [field]: '',
-    }));
-
+    const next = { ...form, [field]: e.target.value };
+    setForm(next);
+    if (touched[field] && RULES[field]) setErrors((prev) => ({ ...prev, [field]: RULES[field](next) }));
+    if (field === 'licenseNumber') licenseCheck.reset();
     setSubmitError('');
   };
 
+  // กรอกช่องนั้นเสร็จ (ออกจากช่อง) → ตรวจและแสดงผลทันที (เลขใบอนุญาตตรวจว่าซ้ำในระบบด้วย)
+  const handleBlur = (field) => () => {
+    setTouched((t) => ({ ...t, [field]: true }));
+    const message = RULES[field](form);
+    setErrors((prev) => ({ ...prev, [field]: message }));
+    if (field === 'licenseNumber' && !message) licenseCheck.check(form.licenseNumber.trim());
+  };
+
   const validateAll = () => {
-    const newErrors = {
-      firstName: validators.required(form.firstName, 'ชื่อ'),
-
-      lastName: validators.required(form.lastName, 'นามสกุล'),
-
-      phone:
-        validators.required(form.phone, 'เบอร์โทรศัพท์') ||
-        validators.phone(form.phone),
-
-      licenseNumber: validators.required(
-        form.licenseNumber,
-        'เลขที่ใบอนุญาตประกอบวิชาชีพ'
-      ),
-
-      hospital: validators.required(
-        form.hospital,
-        'โรงพยาบาล/สถานพยาบาล'
-      ),
-    };
-
+    const newErrors = {};
+    Object.keys(RULES).forEach((k) => {
+      newErrors[k] = RULES[k](form);
+    });
     setErrors(newErrors);
-
+    setTouched(Object.fromEntries(Object.keys(RULES).map((k) => [k, true])));
     return Object.values(newErrors).every((v) => !v);
   };
 
@@ -99,6 +99,13 @@ export default function NurseRegistrationPage() {
     // 2. ตรวจสอบข้อมูลในฟอร์ม
     // ----------------------------------------
     if (!validateAll()) {
+      return;
+    }
+
+    // เลขที่ใบอนุญาตนี้ถูกลงทะเบียนไปแล้วหรือไม่ (ข้อความแสดงใต้ช่องเลขที่ใบอนุญาต)
+    const licenseStatus = await licenseCheck.ensure(form.licenseNumber.trim());
+    if (licenseStatus === 'taken') {
+      document.getElementById('licenseNumber')?.focus();
       return;
     }
 
@@ -223,6 +230,7 @@ export default function NurseRegistrationPage() {
                 }`}
                 value={form.firstName}
                 onChange={handleChange('firstName')}
+                onBlur={handleBlur('firstName')}
               />
 
               {errors.firstName && (
@@ -247,6 +255,7 @@ export default function NurseRegistrationPage() {
                 }`}
                 value={form.lastName}
                 onChange={handleChange('lastName')}
+                onBlur={handleBlur('lastName')}
               />
 
               {errors.lastName && (
@@ -275,6 +284,7 @@ export default function NurseRegistrationPage() {
               placeholder="0812345678"
               value={form.phone}
               onChange={handleChange('phone')}
+                onBlur={handleBlur('phone')}
             />
 
             {errors.phone && (
@@ -306,17 +316,24 @@ export default function NurseRegistrationPage() {
             <input
               id="licenseNumber"
               className={`form-input ${
-                errors.licenseNumber ? 'input-error' : ''
+                errors.licenseNumber || licenseCheck.status === 'taken' ? 'input-error' : ''
               }`}
               placeholder="เช่น NUR-00001"
               value={form.licenseNumber}
               onChange={handleChange('licenseNumber')}
+                onBlur={handleBlur('licenseNumber')}
             />
 
-            {errors.licenseNumber && (
+            {errors.licenseNumber ? (
               <span className="form-error-message">
                 {errors.licenseNumber}
               </span>
+            ) : (
+              <AvailabilityHint
+                check={licenseCheck}
+                availableText="เลขที่ใบอนุญาตนี้ยังไม่เคยลงทะเบียน"
+                takenText="เลขที่ใบอนุญาตนี้ถูกลงทะเบียนในระบบแล้ว หากเป็นเลขของท่านกรุณาติดต่อผู้ดูแลระบบ"
+              />
             )}
 
           </div>
@@ -390,6 +407,7 @@ export default function NurseRegistrationPage() {
               }`}
               value={form.hospital}
               onChange={handleChange('hospital')}
+                onBlur={handleBlur('hospital')}
             />
 
             {errors.hospital && (

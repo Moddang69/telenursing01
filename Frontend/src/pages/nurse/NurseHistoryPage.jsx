@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Archive } from 'lucide-react';
 import { nurseService } from '../../services/nurseService.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
 import ErrorState from '../../components/common/ErrorState.jsx';
@@ -49,7 +50,7 @@ export default function NurseHistoryPage() {
 
       <h2 className="section-subheading">รายละเอียดประวัติการปรึกษา</h2>
       {history.length === 0 ? (
-        <EmptyState icon="🗂️" title="ยังไม่มีประวัติการปรึกษาที่เสร็จสิ้น" />
+        <EmptyState icon={Archive} title="ยังไม่มีประวัติการปรึกษาที่เสร็จสิ้น" />
       ) : (
         <div className="history-list">
           {history.map((h) => (

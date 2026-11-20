@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FileText, Trash2, RefreshCw, CheckCircle } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import { dataDeletionCategories } from '../../data/mockDataDeletionCategories.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
@@ -58,7 +59,7 @@ export default function AdminDataRequestsPage() {
     <div className="admin-data-requests-page">
       <h1>คำขอเกี่ยวกับข้อมูลส่วนบุคคล</h1>
       {requests.length === 0 ? (
-        <EmptyState icon="📄" title="ยังไม่มีคำขอ" />
+        <EmptyState icon={FileText} title="ยังไม่มีคำขอ" />
       ) : (
         <div className="request-list">
           {requests.map((r) => (
@@ -76,7 +77,7 @@ export default function AdminDataRequestsPage() {
                   <button className="btn-danger-outline" onClick={() => handleProcess(r.id, 'reject')}>ปฏิเสธคำขอ</button>
                 </div>
               ) : (
-                <p className="request-processed-note">✅ ดำเนินการแล้ว</p>
+                <p className="request-processed-note"><CheckCircle size={14} className="inline-icon" /> ดำเนินการแล้ว</p>
               )}
             </div>
           ))}
@@ -86,7 +87,7 @@ export default function AdminDataRequestsPage() {
       {/* ============ คำขอลบข้อมูลแบบระบุหมวด (จากหน้า Profile ผู้ป่วย) ============ */}
       <h1 style={{ marginTop: 40 }}>คำขอลบข้อมูลเฉพาะส่วน (จากผู้ป่วย)</h1>
       {pendingDeletionRequests.length === 0 ? (
-        <EmptyState icon="🗑️" title="ยังไม่มีคำขอลบข้อมูลที่รออนุมัติ" />
+        <EmptyState icon={Trash2} title="ยังไม่มีคำขอลบข้อมูลที่รออนุมัติ" />
       ) : (
         <div className="request-list">
           {pendingDeletionRequests.map((r) => (
@@ -134,7 +135,7 @@ export default function AdminDataRequestsPage() {
       {/* ============ คำขอเปลี่ยนพยาบาล (คงเดิมจากรอบก่อนหน้า) ============ */}
       <h1 style={{ marginTop: 40 }}>คำขอเปลี่ยนพยาบาลผู้ดูแล (จากผู้ป่วย)</h1>
       {pendingNurseChangeRequests.length === 0 ? (
-        <EmptyState icon="🔄" title="ยังไม่มีคำขอเปลี่ยนพยาบาลที่รออนุมัติ" />
+        <EmptyState icon={RefreshCw} title="ยังไม่มีคำขอเปลี่ยนพยาบาลที่รออนุมัติ" />
       ) : (
         <div className="request-list">
           {pendingNurseChangeRequests.map((r) => (

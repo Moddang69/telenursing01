@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Video, Calendar, UtensilsCrossed, Activity } from 'lucide-react';
 import { appointmentService } from '../../services/appointmentService.js';
 import { healthService } from '../../services/healthService.js';
 import HealthOverview from '../../components/common/HealthOverview.jsx';
@@ -61,12 +62,12 @@ export default function PatientHomePage() {
             <p className="appointment-status">สถานะ: {appointment.status}</p>
             {appointment.status !== APPOINTMENT_STATUS.COMPLETED && (
               <button className="btn-primary btn-large" onClick={() => navigate('/patient/pre-consult-check')}>
-                🎥 เข้าห้องรอ
+                <Video size={18} className="inline-icon" /> เข้าห้องรอ
               </button>
             )}
           </div>
         ) : (
-          <EmptyState icon="📅" title="ยังไม่มีนัดหมาย" description="เมื่อพยาบาลนัดหมายท่าน จะแสดงผลที่นี่" />
+          <EmptyState icon={<Calendar size={48} />} title="ยังไม่มีนัดหมาย" description="เมื่อพยาบาลนัดหมายท่าน จะแสดงผลที่นี่" />
         )}
       </section>
 
@@ -80,7 +81,7 @@ export default function PatientHomePage() {
       <section className="home-section">
         <h2>ประวัติการรับประทานอาหารล่าสุด</h2>
         {meals.length === 0 ? (
-          <EmptyState icon="🍽️" title="ยังไม่มีข้อมูลการรับประทานอาหาร" />
+          <EmptyState icon={<UtensilsCrossed size={48} />} title="ยังไม่มีข้อมูลการรับประทานอาหาร" />
         ) : (
           <ul className="mini-history-list">
             {meals.map((m, i) => (<li key={i}><strong>{m.date}</strong> · {m.meal}: {m.description}</li>))}
@@ -91,7 +92,7 @@ export default function PatientHomePage() {
       <section className="home-section">
         <h2>ประวัติการออกกำลังกายล่าสุด</h2>
         {exercises.length === 0 ? (
-          <EmptyState icon="🏃" title="ยังไม่มีข้อมูลการออกกำลังกาย" />
+          <EmptyState icon={<Activity size={48} />} title="ยังไม่มีข้อมูลการออกกำลังกาย" />
         ) : (
           <ul className="mini-history-list">
             {exercises.map((ex, i) => (<li key={i}><strong>{ex.date}</strong> · {ex.activity} ({ex.duration} นาที, {ex.distance} กม.)</li>))}

@@ -1,9 +1,19 @@
 import request from 'supertest';
 import app from '../../src/app.js';
 import { Otp } from '../../src/models/index.js';
+import { ensureCollections } from '../helpers/ensureCollections.js';
+import mongoose from 'mongoose';
 
+  beforeEach(async () => {
+    for (const c of Object.values(mongoose.connection.collections)) {
+      await c.deleteMany({});
+    }
+  });
 
 describe('Auth Flow — Integration Tests (End-to-End via HTTP)', () => {
+  beforeAll(async () => {
+    await ensureCollections();
+  });
   const testUser = {
     email: 'integration.patient@example.com',
     password: 'Passw0rd1',

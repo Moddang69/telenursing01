@@ -10,6 +10,7 @@ export const ROUTES = Object.freeze({
   PATIENT_REGISTRATION: '/patient/registration',
   PATIENT_CONSENT: '/patient/consent',
   PATIENT_SELECT_NURSE: '/patient/select-nurse',
+  PATIENT_PRE_CONSULT_CHECK: '/patient/pre-consult-check',
 
   // Patient main
   PATIENT_HOME: '/patient/home',

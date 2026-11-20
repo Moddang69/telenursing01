@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bell } from 'lucide-react';
 import './NotificationSettings.css';
 
 /**
@@ -11,7 +12,7 @@ export default function NotificationSettingsLink({ to }) {
     <section className="profile-section">
       <h2>การแจ้งเตือน</h2>
       <button type="button" className="ns-menu-row" onClick={() => navigate(to)}>
-        <span>🔔 ตั้งค่าการแจ้งเตือน</span>
+        <span><Bell size={18} /> ตั้งค่าการแจ้งเตือน</span>
         <span aria-hidden="true">›</span>
       </button>
     </section>

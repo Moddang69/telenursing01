@@ -10,6 +10,9 @@ import {
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { validateRequest } from '../middleware/validateRequest.js';
+import { createRateLimiter } from '../middleware/rateLimiter.js';
+import { checkAvailability } from '../controllers/availability.controller.js';
+import { availabilityValidator } from '../validators/availability.validator.js';
 import {
   registerValidator,
   loginValidator,
@@ -23,6 +26,11 @@ import {
  * Map ตรงกับ Frontend authService.js ทุก method (Phase 1.1 Service Mapping Table)
  */
 const router = express.Router();
+
+// ตรวจอีเมล/HN/เลขใบอนุญาตว่าถูกใช้แล้วหรือยัง (ให้ฟอร์มลงทะเบียนแจ้งทันทีหลังกรอกช่องนั้นเสร็จ)
+// จำกัดอัตราต่อ IP เพื่อกันการไล่เดาข้อมูล (user enumeration)
+const availabilityLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 30 });
+router.get('/check-availability', availabilityLimiter, availabilityValidator, validateRequest, checkAvailability);
 
 router.post('/register', registerValidator, validateRequest, register);
 router.post('/login', loginValidator, validateRequest, login);

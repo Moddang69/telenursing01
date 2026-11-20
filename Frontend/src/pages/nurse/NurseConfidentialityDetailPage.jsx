@@ -13,7 +13,6 @@ export default function NurseConfidentialityDetailPage() {
         บุคลากรผู้เข้าถึงระบบทุกคนต้องรับทราบและปฏิบัติตามนโยบายนี้อย่างเคร่งครัด
       </p>
       <Accordion items={accordionItems} />
-      {/*<p className="consent-status-note">เวอร์ชันนโยบาย: {CONFIDENTIALITY_VERSION}</p>*/}
     </div>
   );
 }

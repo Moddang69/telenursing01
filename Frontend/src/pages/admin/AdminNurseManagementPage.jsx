@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { adminService } from '../../services/adminService.js';
 import { NURSE_APPROVAL_STATUS } from '../../constants/statuses.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
+import ErrorState from '../../components/common/ErrorState.jsx';
 import './AdminNurseManagementPage.css';
 
 const statusFilters = [
@@ -17,23 +18,39 @@ export default function AdminNurseManagementPage() {
   const [filter, setFilter] = useState('ALL');
   const [confirmAction, setConfirmAction] = useState(null); // { nurse, action }
   const [reason, setReason] = useState('');
+  const [error, setError] = useState(false);
 
-  const load = () => adminService.getNurses().then(setNurses);
+  const load = () => {
+    setError(false);
+    adminService.getNurses()
+      .then(setNurses)
+      .catch((err) => {
+        console.error('AdminNurseManagementPage load error:', err);
+        setError(true);
+      });
+  };
+
   useEffect(() => { load(); }, []);
 
+  if (error) return <ErrorState message="ไม่สามารถโหลดรายชื่อพยาบาลได้" onRetry={load} />;
   if (!nurses) return <LoadingState />;
 
   const filtered = filter === 'ALL' ? nurses : nurses.filter((n) => n.approvalStatus === filter);
 
   const runAction = async () => {
     const { nurse, action } = confirmAction;
-    if (action === 'approve') await adminService.approveNurse(nurse.id);
-    if (action === 'reject') await adminService.rejectNurse(nurse.id, reason);
-    if (action === 'suspend') await adminService.suspendNurse(nurse.id, reason);
-    if (action === 'reactivate') await adminService.reactivateNurse(nurse.id);
-    setConfirmAction(null);
-    setReason('');
-    load();
+    try {
+      if (action === 'approve') await adminService.approveNurse(nurse.id);
+      if (action === 'reject') await adminService.rejectNurse(nurse.id, reason);
+      if (action === 'suspend') await adminService.suspendNurse(nurse.id, reason);
+      if (action === 'reactivate') await adminService.reactivateNurse(nurse.id);
+      setConfirmAction(null);
+      setReason('');
+      load();
+    } catch (err) {
+      console.error('Admin action failed:', err);
+      alert(`การดำเนินการล้มเหลว: ${err.message}`);
+    }
   };
 
   return (

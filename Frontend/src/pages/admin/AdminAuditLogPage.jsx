@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from 'react';
+import { ScrollText } from 'lucide-react';
 import { adminService } from '../../services/adminService.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
+import ErrorState from '../../components/common/ErrorState.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import './AdminAuditLogPage.css';
 
 export default function AdminAuditLogPage() {
   const [logs, setLogs] = useState(null);
   const [query, setQuery] = useState('');
+  const [error, setError] = useState(false);
 
-  useEffect(() => { adminService.getAuditLogs().then(setLogs); }, []);
+  const load = () => {
+    setError(false);
+    adminService.getAuditLogs()
+      .then(setLogs)
+      .catch((err) => {
+        console.error('AdminAuditLogPage load error:', err);
+        setError(true);
+      });
+  };
 
+  useEffect(() => { load(); }, []);
+
+  if (error) return <ErrorState message="ไม่สามารถโหลด Audit Log ได้" onRetry={load} />;
   if (!logs) return <LoadingState />;
 
   const filtered = logs.filter(
@@ -27,7 +41,7 @@ export default function AdminAuditLogPage() {
         onChange={(e) => setQuery(e.target.value)}
       />
       {filtered.length === 0 ? (
-        <EmptyState icon="🧾" title="ไม่พบข้อมูล Audit Log" />
+        <EmptyState icon={ScrollText} title="ไม่พบข้อมูล Audit Log" />
       ) : (
         <table className="admin-table">
           <thead>

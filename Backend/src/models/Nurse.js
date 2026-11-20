@@ -45,7 +45,6 @@ const nurseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-nurseSchema.index({ licenseNumber: 1 }, { unique: true });
 nurseSchema.index({ approvalStatus: 1 });
 
 export default mongoose.model('Nurse', nurseSchema);

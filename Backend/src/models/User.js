@@ -13,8 +13,12 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Invalid email format'],
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        'Invalid email format',
+      ],
     },
+
     passwordHash: {
       type: String,
       required: true,
@@ -47,7 +51,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true } // createdAt, updatedAt อัตโนมัติ
 );
 
-userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ role: 1 });
 
 export default mongoose.model('User', userSchema);

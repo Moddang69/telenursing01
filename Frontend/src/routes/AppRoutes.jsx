@@ -25,7 +25,6 @@ import SessionExpiredPage from '../pages/SessionExpiredPage.jsx';
 // ========================================
 import PatientRegistrationPage from '../pages/patient/PatientRegistrationPage.jsx';
 import ConsentPage from '../pages/patient/ConsentPage.jsx';
-import CareCodePage from '../pages/patient/SelectNursePage.jsx';
 
 // ========================================
 // Patient Layout + Pages
@@ -239,8 +238,7 @@ export default function AppRoutes() {
         }
       />
 
-      // เพิ่ม Route เปิดอ่านนโยบายจากลิงก์ในฟอร์ม Registration (ไม่ต้อง Guard ครบ เพราะเปิดระหว่าง onboarding ได้)
-            {/* เปิดจากลิงก์ในฟอร์มลงทะเบียน — ไม่แสดงปุ่มถอนความยินยอม */}
+      {/* เปิดจากลิงก์ในฟอร์มลงทะเบียน — ไม่แสดงปุ่มถอนความยินยอม */}
       <Route
         path="/patient/consent-policy"
         element={<PatientConsentDetailPage showWithdrawOption={false} />
@@ -289,34 +287,6 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <RoleRoute allow={[ROLES.PATIENT, ROLES.CAREGIVER]}>
-              <VideoConsultationPage />
-            </RoleRoute>
-          </ProtectedRoute>
-        }
-      />
-
-
-      {/* Pre Consult Questionnaire */}
-
-      <Route
-        path="/patient/pre-consult-questionnaire"
-        element={
-          <ProtectedRoute>
-            <RoleRoute allow={[ROLES.PATIENT]}>
-              <PreConsultQuestionnairePage />
-            </RoleRoute>
-          </ProtectedRoute>
-        }
-      />
-
-
-      {/* Patient Waiting Room / Video Consultation */}
-
-      <Route
-        path="/patient/waiting-room"
-        element={
-          <ProtectedRoute>
-            <RoleRoute allow={[ROLES.PATIENT]}>
               <VideoConsultationPage />
             </RoleRoute>
           </ProtectedRoute>

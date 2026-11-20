@@ -1,5 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { Home, FileText, Heart, User } from 'lucide-react';
 import Header from '../components/common/Header.jsx';
 import BottomNav from '../components/common/BottomNav.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -7,10 +8,10 @@ import { ROUTES } from '../constants/routes.js';
 import './PatientLayout.css';
 
 const navItems = [
-  { to: ROUTES.PATIENT_HOME, label: 'หน้าหลัก', icon: '🏠' },
-  { to: ROUTES.PATIENT_HEALTH_LOG, label: 'บันทึกสุขภาพ', icon: '📝' },
-  { to: ROUTES.PATIENT_MY_CARE, label: 'การดูแลของฉัน', icon: '❤️' },
-  { to: ROUTES.PATIENT_PROFILE, label: 'โปรไฟล์', icon: '👤' },
+  { to: ROUTES.PATIENT_HOME, label: 'หน้าหลัก', icon: Home },
+  { to: ROUTES.PATIENT_HEALTH_LOG, label: 'บันทึกสุขภาพ', icon: FileText },
+  { to: ROUTES.PATIENT_MY_CARE, label: 'การดูแลของฉัน', icon: Heart },
+  { to: ROUTES.PATIENT_PROFILE, label: 'โปรไฟล์', icon: User },
 ];
 
 export default function PatientLayout({ title }) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
+import { Home, FileText, Heart, User } from 'lucide-react';
 import Header from '../components/common/Header.jsx';
 import BottomNav from '../components/common/BottomNav.jsx';
 import { caregiverService } from '../services/caregiverService.js';
@@ -9,10 +10,10 @@ import LoadingState from '../components/common/LoadingState.jsx';
 import './CaregiverLayout.css';
 
 const navItems = [
-  { to: ROUTES.CAREGIVER_HOME, label: 'หน้าหลัก', icon: '🏠' },
-  { to: ROUTES.CAREGIVER_HEALTH_LOG, label: 'บันทึกสุขภาพ', icon: '📝' },
-  { to: ROUTES.CAREGIVER_MY_CARE, label: 'การดูแลของฉัน', icon: '❤️' },
-  { to: ROUTES.CAREGIVER_PROFILE, label: 'โปรไฟล์', icon: '👤' },
+  { to: ROUTES.CAREGIVER_HOME, label: 'หน้าหลัก', icon: Home },
+  { to: ROUTES.CAREGIVER_HEALTH_LOG, label: 'บันทึกสุขภาพ', icon: FileText },
+  { to: ROUTES.CAREGIVER_MY_CARE, label: 'การดูแลของฉัน', icon: Heart },
+  { to: ROUTES.CAREGIVER_PROFILE, label: 'โปรไฟล์', icon: User },
 ];
 
 export default function CaregiverLayout() {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { ClipboardList, BookOpen, Link, Check } from 'lucide-react';
 import { carePlanService } from '../../services/carePlanService.js';
 import { educationService } from '../../services/educationService.js';
 import EmptyState from '../../components/common/EmptyState.jsx';
@@ -123,7 +124,7 @@ export default function CaregiverMyCarePage() {
       {tab === 'careplan' && (
         carePlans === null ? <LoadingState /> :
         carePlans.length === 0 ? (
-          <EmptyState icon="📋" title="ยังไม่มีแผนการดูแล" description="พยาบาลของผู้ป่วยจะกำหนดแผนการดูแลให้เร็วๆนี้" />
+          <EmptyState icon={ClipboardList} title="ยังไม่มีแผนการดูแล" description="พยาบาลของผู้ป่วยจะกำหนดแผนการดูแลให้เร็วๆนี้" />
         ) : (
           <div className="care-plan-list">
             {carePlans.map((cp) => (
@@ -149,7 +150,7 @@ export default function CaregiverMyCarePage() {
       {tab === 'education' && (
         education === null ? <LoadingState /> :
         education.length === 0 ? (
-          <EmptyState icon="📚" title="ยังไม่มีการมอบหมายความรู้สุขภาพ" />
+          <EmptyState icon={BookOpen} title="ยังไม่มีการมอบหมายความรู้สุขภาพ" />
         ) : (
           <div className="education-list">
             {education.map((ed) => (
@@ -169,7 +170,7 @@ export default function CaregiverMyCarePage() {
                       disabled={updatingId === ed.id}
                       onClick={() => handleStart(ed)}
                     >
-                      🔗 {ed.status === EDUCATION_STATUS.COMPLETED ? 'เปิดดูเนื้อหาอีกครั้ง' : 'เริ่มเรียน / เปิดเนื้อหา'}
+                      <Link size={16} className="inline-icon" /> {ed.status === EDUCATION_STATUS.COMPLETED ? 'เปิดดูเนื้อหาอีกครั้ง' : 'เริ่มเรียน / เปิดเนื้อหา'}
                     </button>
                   ) : (
                     ed.status !== EDUCATION_STATUS.IN_PROGRESS && ed.status !== EDUCATION_STATUS.COMPLETED && (
@@ -191,7 +192,7 @@ export default function CaregiverMyCarePage() {
                       disabled={updatingId === ed.id}
                       onClick={() => handleComplete(ed)}
                     >
-                      ✓ ทำเครื่องหมายว่าเรียนจบแล้ว
+                      <Check size={16} className="inline-icon" /> ทำเครื่องหมายว่าเรียนจบแล้ว
                     </button>
                   )}
                 </div>
