@@ -117,7 +117,7 @@ export const requestOtp = asyncHandler(async (req, res) => {
 
   // ส่ง OTP ทางอีเมลจริง — ห้ามส่งรหัสกลับใน response ยกเว้นโหมดพัฒนาที่ยังไม่ได้ตั้งค่าอีเมล (และ Production บังคับตั้งค่าอีเมลที่ env.js)
   // NODE_ENV=test ไม่ส่งอีเมลเสมอ (กัน .env ที่มี MAIL_* ทำให้เทสต์ส่งอีเมลจริง / ไม่ได้ devOnlyOtpCode)
-  const devMode = env.NODE_ENV === 'test' || (env.NODE_ENV !== 'production' && !isMailConfigured());
+  const devMode = env.NODE_ENV === 'test' || !isMailConfigured();
   if (devMode) {
     // โหมดพัฒนา: ไม่มีการส่งอีเมล — พิมพ์รหัสที่หน้าต่าง Terminal ของ Backend (หน้าเว็บไม่ได้แสดงรหัสนี้)
     if (env.NODE_ENV !== 'test - auth.controller.js:123') console.log(`🔑 [DEV OTP] ${email} (${purpose}): ${result.otpCode}  — ยังไม่ได้ตั้งค่า MAIL_* จึงไม่ได้ส่งอีเมล`);
