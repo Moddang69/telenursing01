@@ -22,11 +22,14 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <h2 className="admin-sidebar-title">Telenursing Admin</h2>
         <nav>
-          {navItems.map((item) => (
-            <NavLink key={item.to} to={item.to} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
-              <span aria-hidden="true">{item.icon}</span> {item.label}
-            </NavLink>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink key={item.to} to={item.to} className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}>
+                <span aria-hidden="true"><Icon size={18} /></span> {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
         <div className="admin-sidebar-footer">
           <p>{user?.name}</p>
