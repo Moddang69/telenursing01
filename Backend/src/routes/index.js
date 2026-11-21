@@ -19,6 +19,8 @@ import dataRequestRoutes from './dataRequest.routes.js';
 import adminRoutes from './admin.routes.js';
 import notificationRoutes from './notification.routes.js';
 import searchRoutes from './search.routes.js';
+import satisfactionRatingRoutes from './satisfactionRating.routes.js';
+import caseClosureRoutes from './caseClosure.routes.js';
 
 /**
  * routes/index.js (FINAL)
@@ -59,5 +61,7 @@ router.use('/data-requests', dataRequestRoutes);
 router.use('/admin', adminRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/search', searchRoutes);
+router.use('/satisfaction-ratings', satisfactionRatingRoutes);
+router.use('/case-closures', caseClosureRoutes);
 
 export default router;

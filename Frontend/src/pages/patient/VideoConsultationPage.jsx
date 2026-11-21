@@ -53,7 +53,12 @@ export default function VideoConsultationPage() {
   const handleEndCall = async () => {
     setEnding(true);
     try {
-      await call.endCall();
+      const result = await call.endCall();
+      // ถ้าวิดีโอคอลเสร็จสิ้น → redirect ไปหน้าให้คะแนนความพึงพอใจ
+      if (result.completed && appointmentId) {
+        navigate(`/patient/satisfaction-rating?appointmentId=${appointmentId}`);
+        return;
+      }
     } finally {
       setEnding(false);
     }

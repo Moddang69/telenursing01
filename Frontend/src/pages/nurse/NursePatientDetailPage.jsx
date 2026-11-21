@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { UtensilsCrossed, Activity, ClipboardList, BookOpen, Link, Lock } from 'lucide-react';
+import { UtensilsCrossed, Activity, ClipboardList, BookOpen, Link, Lock, Archive } from 'lucide-react';
 import { nurseService } from '../../services/nurseService.js';
 import { healthService } from '../../services/healthService.js';
 import { carePlanService } from '../../services/carePlanService.js';
@@ -14,9 +14,10 @@ import EmptyState from '../../components/common/EmptyState.jsx';
 import NurseAppointmentTab from '../../components/nurse/NurseAppointmentTab.jsx';
 import AssignCarePlanForm from '../../components/nurse/AssignCarePlanForm.jsx';
 import AssignEducationForm from '../../components/nurse/AssignEducationForm.jsx';
+import CaseClosureModal from '../../components/nurse/CaseClosureModal.jsx';
 import './NursePatientDetailPage.css';
 
-const TABS = ['Health Data', 'Care Plan', 'Education', 'Chat', 'Appointment', 'Medical History'];
+const TABS = ['Health Data', 'Care Plan', 'Education', 'Chat', 'Appointment', 'Medical History', 'Consultation History'];
 
 const carePlanStatusLabel = {
   ACTIVE: 'กำลังดำเนินการ',
@@ -50,6 +51,8 @@ export default function NursePatientDetailPage() {
   const [error, setError] = useState(false);
   const [showCarePlanForm, setShowCarePlanForm] = useState(false);
   const [showEducationForm, setShowEducationForm] = useState(false);
+  const [consultationHistory, setConsultationHistory] = useState([]);
+  const [showCaseClosureModal, setShowCaseClosureModal] = useState(false);
 
   const loadAll = useCallback(() => {
     setError(false);
@@ -63,14 +66,16 @@ export default function NursePatientDetailPage() {
       healthService.getExercises(patientId),
       carePlanService.getCarePlans(patientId),
       educationService.getEducationList(patientId),
+      nurseService.getPatientConsultationHistory(patientId),
     ])
-      .then(([p, smbg, bp, hba1c, ldl, mealList, exerciseList, plans, edu]) => {
+      .then(([p, smbg, bp, hba1c, ldl, mealList, exerciseList, plans, edu, consultHistory]) => {
         setPatient(p);
         setHealth({ smbg, bp, hba1c, ldl });
         setMeals(mealList.slice(-5).reverse());
         setExercises(exerciseList.slice(-5).reverse());
         setCarePlans(plans);
         setEducation(edu);
+        setConsultationHistory(consultHistory);
       })
       .catch((err) => {
         console.error('NursePatientDetailPage load error:', err);
@@ -104,8 +109,14 @@ export default function NursePatientDetailPage() {
   return (
     <div className="patient-detail-page">
       <div className="patient-detail-header">
-        <h1>{patient.name}</h1>
-        <p>HN: {patient.hn} · <StatusBadge status={patient.alertSeverity} /></p>
+        <div>
+          <h1>{patient.name}</h1>
+          <p>HN: {patient.hn} · <StatusBadge status={patient.alertSeverity} /></p>
+        </div>
+        <button className="btn-close-case" onClick={() => setShowCaseClosureModal(true)}>
+          <Archive size={18} />
+          ปิดเคส
+        </button>
       </div>
 
       <div className="tab-bar" role="tablist">
@@ -256,6 +267,44 @@ export default function NursePatientDetailPage() {
           </p>
         </div>
       )}
+
+      {/* Consultation History — ประวัติการปรึกษาพร้อมบันทึกที่พยาบาลพิมพ์ */}
+      {tab === 'Consultation History' && (
+        <div>
+          <h3 className="section-subheading" style={{ marginTop: 0 }}>ประวัติการปรึกษา</h3>
+          {consultationHistory.length === 0 ? (
+            <EmptyState icon={ClipboardList} title="ยังไม่มีการปรึกษาที่เสร็จสิ้น" />
+          ) : (
+            <div className="consultation-history-list">
+              {consultationHistory.map((item) => (
+                <div key={item.id} className="consultation-history-card">
+                  <div className="consultation-history-header">
+                    <strong>{item.date}</strong>
+                    <span>Video Consultation</span>
+                  </div>
+                  {item.reason && (
+                    <p><strong>สาเหตุ:</strong> {item.reason}</p>
+                  )}
+                  <div className="consultation-note-section">
+                    <strong>บันทึกการปรึกษา:</strong>
+                    <p className="consultation-note-text">{item.note || 'ไม่มีบันทึก'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <CaseClosureModal
+        isOpen={showCaseClosureModal}
+        onClose={() => setShowCaseClosureModal(false)}
+        patientId={patientId}
+        onSuccess={() => {
+          // reload data after closure
+          loadAll();
+        }}
+      />
     </div>
   );
 }

@@ -6,3 +6,27 @@
 .analytics-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); display: flex; flex-direction: column; gap: 4px; }
 .analytics-value { font-size: 28px; font-weight: 700; color: var(--color-primary-dark); }
 .analytics-label { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+/* Consultation Note Section */
+.consultation-note-section {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.consultation-note-section strong {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-sm);
+}
+
+.consultation-note-text {
+  background: var(--color-bg-soft);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  margin: 0;
+}

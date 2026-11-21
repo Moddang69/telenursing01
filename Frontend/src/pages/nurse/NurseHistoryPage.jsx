@@ -4,12 +4,14 @@ import { nurseService } from '../../services/nurseService.js';
 import LoadingState from '../../components/common/LoadingState.jsx';
 import ErrorState from '../../components/common/ErrorState.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
+import SatisfactionCommentsModal from '../../components/nurse/SatisfactionCommentsModal.jsx';
 import './NurseHistoryPage.css';
 
 export default function NurseHistoryPage() {
   const [analytics, setAnalytics] = useState(null);
   const [history, setHistory] = useState(null);
   const [error, setError] = useState(false);
+  const [showSatisfactionModal, setShowSatisfactionModal] = useState(false);
 
   const load = useCallback(() => {
     setError(false);
@@ -26,13 +28,12 @@ export default function NurseHistoryPage() {
   if (error) return <ErrorState message="ไม่สามารถโหลดข้อมูลประวัติได้" onRetry={load} />;
   if (!analytics || !history) return <LoadingState />;
 
-  // avgWaitingTimeMinutes / patientSatisfactionScore ระบบยังไม่มีข้อมูลรองรับ Backend จึงส่ง null มา — แสดงเป็น "-"
   const cards = [
-    { label: 'จำนวนการคอลสำเร็จ', value: analytics.completedCalls ?? '-' },
-    { label: 'ระยะเวลารอคอยเฉลี่ย (นาที)', value: analytics.avgWaitingTimeMinutes ?? '-' },
-    { label: 'Patient Satisfaction (/5)', value: analytics.patientSatisfactionScore ?? '-' },
-    { label: 'Nurse Workload วันนี้ (เคส)', value: analytics.nurseWorkloadToday ?? '-' },
-    { label: 'จำนวนเคสที่ปิดไป', value: analytics.closedCases ?? '-' },
+    { label: 'จำนวนการคอลสำเร็จ', value: analytics.completedCalls ?? '-', clickable: false },
+    { label: 'ระยะเวลารอคอยเฉลี่ย (นาที)', value: analytics.avgWaitingTimeMinutes ?? '-', clickable: false },
+    { label: 'Patient Satisfaction (/5)', value: analytics.patientSatisfactionScore ?? '-', clickable: true, onClick: () => setShowSatisfactionModal(true) },
+    { label: 'Nurse Workload วันนี้ (เคส)', value: analytics.nurseWorkloadToday ?? '-', clickable: false },
+    { label: 'จำนวนเคสที่ปิดไป', value: analytics.closedCases ?? '-', clickable: false },
   ];
 
   return (
@@ -41,7 +42,11 @@ export default function NurseHistoryPage() {
 
       <div className="analytics-grid">
         {cards.map((c) => (
-          <div key={c.label} className="analytics-card">
+          <div 
+            key={c.label} 
+            className={`analytics-card ${c.clickable ? 'clickable' : ''}`}
+            onClick={c.onClick}
+          >
             <span className="analytics-value">{c.value}</span>
             <span className="analytics-label">{c.label}</span>
           </div>
@@ -60,12 +65,20 @@ export default function NurseHistoryPage() {
                 <span>{h.date} · {h.type}</span>
               </div>
               <p><strong>HN:</strong> {h.hn}</p>
-              <p><strong>สาเหตุ:</strong> {h.reason || '-'}</p>
-              <p><strong>บันทึกการปรึกษา:</strong> {h.note || '-'}</p>
+              {h.reason && <p><strong>สาเหตุ:</strong> {h.reason}</p>}
+              <div className="consultation-note-section">
+                <strong>บันทึกการปรึกษา:</strong>
+                <p className="consultation-note-text">{h.note || 'ไม่มีบันทึก'}</p>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <SatisfactionCommentsModal 
+        isOpen={showSatisfactionModal} 
+        onClose={() => setShowSatisfactionModal(false)} 
+      />
     </div>
   );
 }

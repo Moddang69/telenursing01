@@ -8,6 +8,7 @@ import {
   getNurseAppointments,
   getNurseAnalytics,
   getNurseHistory,
+  getPatientConsultationHistory,
 } from '../controllers/nurse.controller.js';
 import { getAvailableNurses } from '../controllers/careTeam.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
@@ -36,6 +37,17 @@ router.get(
   validateRequest,
   verifyCareTeamAccess,
   getPatientDetailForNurse
+);
+
+// ---------- Patient Consultation History (ประวัติการปรึกษาของผู้ป่วยรายหนึ่ง) ----------
+router.get(
+  '/patients/:patientId/consultation-history',
+  authenticate,
+  verifyRole(['nurse']),
+  patientIdParamValidator,
+  validateRequest,
+  verifyCareTeamAccess,
+  getPatientConsultationHistory
 );
 
 // ---------- Nurse Profile (Self) — พยาบาลที่ยังรออนุมัติต้องเรียกได้ (ใช้ตอน login/หน้ารออนุมัติ) ----------

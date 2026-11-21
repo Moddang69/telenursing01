@@ -48,6 +48,7 @@ import PatientConsentDetailPage from '../pages/patient/PatientConsentDetailPage.
 import PreConsultCheckPage from '../pages/patient/PreConsultCheckPage.jsx';
 import PreConsultQuestionnairePage from '../pages/patient/PreConsultQuestionnairePage.jsx';
 import VideoConsultationPage from '../pages/patient/VideoConsultationPage.jsx';
+import SatisfactionRatingPage from '../pages/patient/SatisfactionRatingPage.jsx';
 
 // ========================================
 // Nurse Onboarding
@@ -288,6 +289,18 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <RoleRoute allow={[ROLES.PATIENT, ROLES.CAREGIVER]}>
               <VideoConsultationPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Satisfaction Rating - ให้คะแนนความพึงพอใจหลังวิดีโอคอล */}
+      <Route
+        path="/patient/satisfaction-rating"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allow={[ROLES.PATIENT]}>
+              <SatisfactionRatingPage />
             </RoleRoute>
           </ProtectedRoute>
         }

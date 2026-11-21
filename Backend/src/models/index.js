@@ -24,3 +24,5 @@ export { default as Otp } from './Otp.js';
 export { default as Notification } from './Notification.js';
 export { default as NotificationSetting } from './NotificationSetting.js';
 export { default as PushSubscription } from './PushSubscription.js';
+export { default as SatisfactionRating } from './SatisfactionRating.js';
+export { default as CaseClosure } from './CaseClosure.js';

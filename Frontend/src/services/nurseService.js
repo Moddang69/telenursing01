@@ -88,8 +88,40 @@ export const nurseService = {
       date: day(a.dueDateTime || a.date),
       type: 'Video Consultation',
       reason: a.reason,
-      note: a.note,
+      note: a.consultationNote || a.note,
     }));
+  },
+
+  async getPatientConsultationHistory(patientId) {
+    const res = await apiClient.get(`/nurses/patients/${patientId}/consultation-history`);
+    return (res.data || []).map((a) => ({
+      id: a._id,
+      date: day(a.dueDateTime || a.date),
+      reason: a.reason,
+      note: a.consultationNote || a.note,
+    }));
+  },
+
+  // ดึงรายการคะแนนความพึงพอใจทั้งหมดของพยาบาล
+  async getSatisfactionRatings() {
+    const res = await apiClient.get(`/satisfaction-ratings/nurse/${getNurseId()}`);
+    return res.data || [];
+  },
+
+  // ปิดเคสผู้ป่วย
+  async closeCase(patientId, closureReason, otherReason) {
+    const res = await apiClient.post('/case-closures', {
+      patientId,
+      closureReason,
+      otherReason,
+    });
+    return res.data;
+  },
+
+  // ดึงประวัติการปิดเคส
+  async getCaseClosures() {
+    const res = await apiClient.get(`/case-closures/nurse/${getNurseId()}`);
+    return res.data || [];
   },
 };
 

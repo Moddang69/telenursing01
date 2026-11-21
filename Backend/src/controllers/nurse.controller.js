@@ -227,7 +227,6 @@ export const getNurseAppointments = asyncHandler(async (req, res) => {
 
 // ---------------------------------------------------------------
 // GET /api/nurses/:nurseId/analytics
-// ตัวเลขที่ระบบยังไม่มีข้อมูลรองรับ (เวลารอคอยเฉลี่ย, คะแนนความพึงพอใจ) คืน null — Frontend แสดงเป็น "-"
 // ---------------------------------------------------------------
 export const getNurseAnalytics = asyncHandler(async (req, res) => {
   const { nurseId } = req.params;
@@ -235,23 +234,63 @@ export const getNurseAnalytics = asyncHandler(async (req, res) => {
   const dayStart = startOfDay();
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-  const [completed, workloadToday] = await Promise.all([
+  // ดึงข้อมูลทั้งหมดพร้อมกัน
+  const [completed, workloadToday, waitingTimes, satisfactionData, closedCasesCount] = await Promise.all([
     Appointment.countDocuments({ nurseId, status: 'COMPLETED' }),
     Appointment.countDocuments({
       nurseId,
       dueDateTime: { $gte: dayStart, $lt: dayEnd },
       status: { $nin: ['CANCELLED', 'RESCHEDULED', 'NO_SHOW'] },
     }),
+    // คำนวณระยะเวลารอคอยเฉลี่ย (นาที) จาก VideoSession
+    (async () => {
+      const VideoSession = (await import('../models/VideoSession.js')).default;
+      const sessions = await VideoSession.find({
+        nurseId,
+        connectedAt: { $exists: true, $ne: null },
+        createdAt: { $exists: true, $ne: null },
+      }).select('createdAt connectedAt');
+
+      if (sessions.length === 0) return null;
+
+      const totalMinutes = sessions.reduce((sum, s) => {
+        const waitMs = s.connectedAt.getTime() - s.createdAt.getTime();
+        return sum + waitMs / (1000 * 60);
+      }, 0);
+
+      return Math.round(totalMinutes / sessions.length);
+    })(),
+    // ดึงคะแนนความพึงพอใจเฉลี่ย
+    (async () => {
+      const SatisfactionRating = (await import('../models/SatisfactionRating.js')).default;
+      const result = await SatisfactionRating.aggregate([
+        { $match: { nurseId: nurseId.toString() } },
+        {
+          $group: {
+            _id: null,
+            averageRating: { $avg: '$rating' },
+            totalRatings: { $sum: 1 },
+          },
+        },
+      ]);
+      if (result.length === 0) return null;
+      return Math.round(result[0].averageRating * 10) / 10;
+    })(),
+    // ดึงจำนวนเคสที่ปิดจริงจาก CaseClosure
+    (async () => {
+      const CaseClosure = (await import('../models/CaseClosure.js')).default;
+      return await CaseClosure.countDocuments({ nurseId });
+    })(),
   ]);
 
   res.status(200).json({
     success: true,
     data: {
       completedCalls: completed,
-      avgWaitingTimeMinutes: null,
-      patientSatisfactionScore: null,
+      avgWaitingTimeMinutes: waitingTimes,
+      patientSatisfactionScore: satisfactionData,
       nurseWorkloadToday: workloadToday,
-      closedCases: completed,
+      closedCases: closedCasesCount,
     },
   });
 });
@@ -267,7 +306,43 @@ export const getNurseHistory = asyncHandler(async (req, res) => {
     .sort({ dueDateTime: -1 })
     .limit(50);
 
-  res.status(200).json({ success: true, data: items });
+  // ดึง VideoSession สำหรับแต่ละ Appointment เพื่อเอา consultationNote
+  const VideoSession = (await import('../models/VideoSession.js')).default;
+  const appointmentIds = items.map((a) => a._id);
+  const sessions = await VideoSession.find({ appointmentId: { $in: appointmentIds } });
+  const sessionMap = new Map(sessions.map((s) => [s.appointmentId.toString(), s]));
+
+  // รวม consultationNote เข้าไปในแต่ละ item
+  const result = items.map((a) => ({
+    ...a.toObject(),
+    consultationNote: sessionMap.get(a._id.toString())?.consultationNote || null,
+  }));
+
+  res.status(200).json({ success: true, data: result });
+});
+
+// GET /api/nurses/patients/:patientId/consultation-history  (ประวัติการปรึกษาของผู้ป่วยรายหนึ่ง)
+// ---------------------------------------------------------------
+export const getPatientConsultationHistory = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+
+  const items = await Appointment.find({ patientId, status: 'COMPLETED' })
+    .sort({ dueDateTime: -1 })
+    .limit(50);
+
+  // ดึง VideoSession สำหรับแต่ละ Appointment เพื่อเอา consultationNote
+  const VideoSession = (await import('../models/VideoSession.js')).default;
+  const appointmentIds = items.map((a) => a._id);
+  const sessions = await VideoSession.find({ appointmentId: { $in: appointmentIds } });
+  const sessionMap = new Map(sessions.map((s) => [s.appointmentId.toString(), s]));
+
+  // รวม consultationNote เข้าไปในแต่ละ item
+  const result = items.map((a) => ({
+    ...a.toObject(),
+    consultationNote: sessionMap.get(a._id.toString())?.consultationNote || null,
+  }));
+
+  res.status(200).json({ success: true, data: result });
 });
 
 export default {
@@ -279,4 +354,5 @@ export default {
   getNurseAppointments,
   getNurseAnalytics,
   getNurseHistory,
+  getPatientConsultationHistory,
 };
