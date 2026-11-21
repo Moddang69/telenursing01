@@ -12,7 +12,7 @@ import { env } from '../config/env.js';
  * - max 3 resend, max 5 wrong attempts
  */
 const OTP_TTL_SECONDS = 180;
-const MAX_RESEND = 3;
+const MAX_RESEND = 5;
 const MAX_WRONG_ATTEMPTS = 5;
 
 export async function createOtp({ email, purpose }) {
@@ -21,7 +21,7 @@ export async function createOtp({ email, purpose }) {
   const existing = await Otp.findOne({ email, purpose, verified: false, expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 });
 
   if (existing && existing.resendCount >= MAX_RESEND) {
-    throw new ApiError(429, 'ขอ OTP ซ้ำได้ไม่เกิน 3 ครั้ง กรุณารอสักครู่หรือเริ่มขั้นตอนใหม่');
+    throw new ApiError(429, 'ขอ OTP ซ้ำได้ไม่เกิน 5 ครั้ง กรุณารอสักครู่หรือเริ่มขั้นตอนใหม่');
   }
 
   const otpCode = generateOtpCode();

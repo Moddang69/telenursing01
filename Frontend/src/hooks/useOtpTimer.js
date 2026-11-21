@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const OTP_LIFETIME_SECONDS = 180; // 3 minutes
 const RESEND_COOLDOWN_SECONDS = 30;
-const MAX_RESEND_COUNT = 3; // CONFIGURABLE: mock limit
+const MAX_RESEND_COUNT = 5; // CONFIGURABLE: mock limit
 const MAX_WRONG_ATTEMPTS = 5; // CONFIGURABLE: mock limit
 
 export function useOtpTimer() {
