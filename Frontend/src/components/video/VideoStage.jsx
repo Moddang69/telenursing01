@@ -98,15 +98,16 @@ export default function VideoStage({ call, remoteLabel = 'คู่สนทน�
           <SplitIcon size={20} />
           <span className="vs-btn-text"> หน้าจอคู่</span>
         </button>
-        <button
-          type="button"
-          className={isFullscreen ? 'active' : ''}
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'โหมดเต็มจอ'}
-        >
-          {isFullscreen ? <ExitFullscreenIcon size={20} /> : <FullscreenIcon size={20} />}
-          <span className="vs-btn-text"> {isFullscreen ? 'ออกจากเต็มจอ' : 'เต็มจอ'}</span>
-        </button>
+        {!isFullscreen && (
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            title="โหมดเต็มจอ"
+          >
+            <FullscreenIcon size={20} />
+            <span className="vs-btn-text"> เต็มจอ</span>
+          </button>
+        )}
 
         {layout === 'pip' && (
           <span className="vs-size-ctl" role="group" aria-label="ขนาดวิดีโอของฉัน">
