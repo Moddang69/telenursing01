@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import AgoraRTC from 'agora-rtc-sdk-ng';
 import { VIDEO_CALL_STATE as S } from '../constants/statuses.js';
 import videoCallService from '../services/videoCallService.js';
 
@@ -92,7 +93,6 @@ export function useAgoraCall({ appointmentId, onRejoin }) {
 
     (async () => {
       try {
-        const { default: AgoraRTC } = await import('agora-rtc-sdk-ng');
         if (cancelled || ctx.aborted) return;
         AgoraRTC.setLogLevel(3); // แสดงเฉพาะ Error
 
