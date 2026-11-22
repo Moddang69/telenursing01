@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useVideoLayout } from '../../hooks/useVideoLayout.js';
 import SlashIcon from './SlashIcon.jsx';
 import './VideoStage.css';
@@ -15,30 +15,30 @@ import './VideoStage.css';
 export default function VideoStage({ call, remoteLabel = 'คู่สนทนา', children }) {
   const { layout, size, setLayout, growSelf, shrinkSelf, canGrow, canShrink } = useVideoLayout();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const stageRef = useRef(null);
 
   const toggleFullscreen = useCallback(() => {
+    const el = stageRef.current;
+    if (!el) return;
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+      el.requestFullscreen?.().catch((err) => {
+        console.log(`Fullscreen error: ${err.message}`);
       });
-      setIsFullscreen(true);
     } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
+      document.exitFullscreen?.();
     }
   }, []);
 
-  // ติดตามการเปลี่ยนแปลง fullscreen state
-  React.useEffect(() => {
+  useEffect(() => {
     const handleChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      setIsFullscreen(document.fullscreenElement === stageRef.current);
     };
     document.addEventListener('fullscreenchange', handleChange);
     return () => document.removeEventListener('fullscreenchange', handleChange);
   }, []);
 
   return (
-    <div className={`vs-stage vs-${layout} vs-size-${size}`}>
+    <div ref={stageRef} className={`vs-stage vs-${layout} vs-size-${size}`}>
       <div className="vs-tile vs-tile-remote">
         <div className="vs-video" ref={call.remoteRef} />
         <span className="vs-label">{remoteLabel}</span>

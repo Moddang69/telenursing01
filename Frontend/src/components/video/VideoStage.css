@@ -1,6 +1,13 @@
 /* src/components/video/VideoStage.css — พื้นที่วิดีโอคอล (ผู้ป่วย + พยาบาล) */
 .vs-stage { position: relative; flex: 1; min-height: 360px; background: #000; overflow: hidden; display: flex; flex-direction: column; }
 
+/* Fullscreen mode - ทำให้เต็มจอและปรับ layout */
+.vs-stage:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+}
+
 /* ภาพ 1 ช่อง (Agora เล่นวิดีโอลงใน .vs-video) */
 .vs-tile { position: relative; background: #111; overflow: hidden; }
 .vs-video { position: absolute; inset: 0; width: 100%; height: 100%; }
