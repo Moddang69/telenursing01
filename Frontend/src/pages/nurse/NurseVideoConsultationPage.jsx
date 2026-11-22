@@ -139,6 +139,74 @@ export default function NurseVideoConsultationPage() {
 
   const hasCoords = preConsult?.gpsCoordinates?.lat != null && preConsult?.gpsCoordinates?.lng != null;
 
+  // เนื้อหาแผงลอย - ใช้ทั้งโหมดปกติและโหมดเต็มจอ
+  const panelContent = panel && (
+    <div className="nurse-video-panel-content">
+      <div className="nurse-video-panel-head">
+        <span>{panel === 'info' ? INFO_TITLE : '💬 แชทกับผู้ป่วย'}</span>
+        <button
+          type="button"
+          className="nurse-video-panel-close"
+          aria-label="ปิดแผง"
+          onClick={() => setPanel(null)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="nurse-video-panel-body">
+        {panel === 'info' && (
+          <>
+            {patient && (
+              <>
+                <h3>{patient.name}</h3>
+                <p>HN: {patient.hn}</p>
+              </>
+            )}
+
+            <h4>แบบสอบถามก่อนพบพยาบาล</h4>
+            {preConsult ? (
+              <ul className="preconsult-list">
+                <li>
+                  <strong>ตำแหน่ง:</strong> {preConsult.location}
+                  {hasCoords && (
+                    <>
+                      {' '}
+                      <a
+                        href={mapsUrl(preConsult.gpsCoordinates.lat, preConsult.gpsCoordinates.lng)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        📍 เปิดแผนที่
+                      </a>
+                    </>
+                  )}
+                </li>
+                <li><strong>เบอร์ฉุกเฉิน:</strong> {preConsult.emergencyContact}</li>
+                <li><strong>น้ำตาลล่าสุด:</strong> {preConsult.latestGlucose}</li>
+                <li><strong>ความดันล่าสุด:</strong> {preConsult.latestBP}</li>
+                <li><strong>ระดับความเจ็บปวด:</strong> {preConsult.painLevel}/10</li>
+                <li><strong>อาการ:</strong> {getSymptomText(preConsult.symptoms, preConsult.otherSymptom)}</li>
+              </ul>
+            ) : (
+              <p>ผู้ป่วยยังไม่ได้กรอกแบบสอบถาม</p>
+            )}
+
+            <h4>บันทึกการปรึกษา (Consultation Note)</h4>
+            <textarea
+              className="form-input textarea"
+              placeholder="บันทึกการประเมิน/คำแนะนำ (ห้ามระบุการวินิจฉัยโรคโดยอัตโนมัติ)"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </>
+        )}
+
+        {panel === 'chat' && <ChatPanel patientId={patientId} currentRole="nurse" />}
+      </div>
+    </div>
+  );
+
   // ปุ่มควบคุมวิดีโอคอล - ใช้ทั้งโหมดปกติและโหมดเต็มจอ
   const videoControls = (
     <>
@@ -195,7 +263,7 @@ export default function NurseVideoConsultationPage() {
           {stateLabel[call.state]}
         </div>
 
-        <VideoStage call={call} remoteLabel={patient?.name || 'ผู้ป่วย'} controls={videoControls}>
+        <VideoStage call={call} remoteLabel={patient?.name || 'ผู้ป่วย'} controls={videoControls} panel={panelContent}>
           {lookupDone && !appointmentId ? (
             <div className="agora-overlay">
               <p>⚠️ ไม่พบนัดหมายของผู้ป่วยรายนี้ที่เข้าห้องได้ตอนนี้ กรุณาสร้างนัดหมายก่อนเริ่มวิดีโอคอล</p>
@@ -226,78 +294,6 @@ export default function NurseVideoConsultationPage() {
 
           {call.mediaWarning && <div className="agora-warning">{call.mediaWarning}</div>}
         </VideoStage>
-
-        {/* แผงลอย: กดปุ่มเพื่อเปิด / กด ✕ หรือกดปุ่มเดิมซ้ำเพื่อปิด */}
-        {panel && (
-          <aside
-            className="nurse-video-panel"
-            role="dialog"
-            aria-label={panel === 'info' ? INFO_TITLE : 'แชท'}
-          >
-            <div className="nurse-video-panel-head">
-              <span>{panel === 'info' ? INFO_TITLE : '💬 แชทกับผู้ป่วย'}</span>
-              <button
-                type="button"
-                className="nurse-video-panel-close"
-                aria-label="ปิดแผง"
-                onClick={() => setPanel(null)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="nurse-video-panel-body">
-              {panel === 'info' && (
-                <>
-                  {patient && (
-                    <>
-                      <h3>{patient.name}</h3>
-                      <p>HN: {patient.hn}</p>
-                    </>
-                  )}
-
-                  <h4>แบบสอบถามก่อนพบพยาบาล</h4>
-                  {preConsult ? (
-                    <ul className="preconsult-list">
-                      <li>
-                        <strong>ตำแหน่ง:</strong> {preConsult.location}
-                        {hasCoords && (
-                          <>
-                            {' '}
-                            <a
-                              href={mapsUrl(preConsult.gpsCoordinates.lat, preConsult.gpsCoordinates.lng)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              📍 เปิดแผนที่
-                            </a>
-                          </>
-                        )}
-                      </li>
-                      <li><strong>เบอร์ฉุกเฉิน:</strong> {preConsult.emergencyContact}</li>
-                      <li><strong>น้ำตาลล่าสุด:</strong> {preConsult.latestGlucose}</li>
-                      <li><strong>ความดันล่าสุด:</strong> {preConsult.latestBP}</li>
-                      <li><strong>ระดับความเจ็บปวด:</strong> {preConsult.painLevel}/10</li>
-                      <li><strong>อาการ:</strong> {getSymptomText(preConsult.symptoms, preConsult.otherSymptom)}</li>
-                    </ul>
-                  ) : (
-                    <p>ผู้ป่วยยังไม่ได้กรอกแบบสอบถาม</p>
-                  )}
-
-                  <h4>บันทึกการปรึกษา (Consultation Note)</h4>
-                  <textarea
-                    className="form-input textarea"
-                    placeholder="บันทึกการประเมิน/คำแนะนำ (ห้ามระบุการวินิจฉัยโรคโดยอัตโนมัติ)"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                  />
-                </>
-              )}
-
-              {panel === 'chat' && <ChatPanel patientId={patientId} currentRole="nurse" />}
-            </div>
-          </aside>
-        )}
 
         <div className="video-controls">
           {videoControls}

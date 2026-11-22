@@ -33,6 +33,56 @@
 .preconsult-list li { padding: 4px 0; }
 .diagnosis-warning { font-size: var(--font-size-xs); color: var(--color-warning); background: var(--color-warning-bg); padding: var(--space-2); border-radius: var(--radius-sm); margin-top: var(--space-2); }
 
+/* แผงลอยในโหมดเต็มจอ */
+.nurse-video-panel-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.nurse-video-panel-content .nurse-video-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.nurse-video-panel-content .nurse-video-panel-close {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.nurse-video-panel-content .nurse-video-panel-body {
+  padding: var(--space-3);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nurse-video-panel-content .nurse-video-panel-body h3,
+.nurse-video-panel-content .nurse-video-panel-body h4 {
+  margin: var(--space-2) 0 var(--space-1);
+}
+
+.nurse-video-panel-content .chat-panel {
+  height: calc(100% - 60px);
+  border: none;
+  border-radius: 0;
+  margin: 0;
+}
+
 /* หน้าจอหลังวางสายก่อนผู้ป่วยเข้า (เข้าร่วมใหม่ได้) */
 .nurse-video-left { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); padding: var(--space-5); text-align: center; }
 .nurse-video-left p { max-width: 480px; color: var(--color-text-muted); }

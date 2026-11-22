@@ -43,7 +43,7 @@
 .vs-split .vs-video video { object-fit: contain !important; }
 
 /* --- แถบเลือกรูปแบบ (มุมซ้ายล่าง ไม่ชนกับวิดีโอตัวเองที่มุมขวาล่าง) --- */
-.vs-toolbar { position: absolute; left: 12px; bottom: 12px; z-index: 7; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.vs-toolbar { position: absolute; left: 12px; bottom: 12px; z-index: 15; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .vs-toolbar button {
   min-height: 40px; min-width: 40px; padding: 0 10px; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px;
   background: rgba(0,0,0,0.55); color: #fff; font: inherit; font-size: var(--font-size-xs); cursor: pointer;
@@ -128,4 +128,53 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ปุ่มออกจากโหมดเต็มจอ */
+.vs-exit-fullscreen-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  min-height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: background 0.2s;
+}
+
+.vs-exit-fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* แผงลอยในโหมดเต็มจอ */
+.vs-panel-fullscreen {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 140px);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.vs-panel-fullscreen > * {
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+  .vs-panel-fullscreen {
+    width: calc(100vw - 40px);
+    right: 20px;
+    left: 20px;
+  }
 }

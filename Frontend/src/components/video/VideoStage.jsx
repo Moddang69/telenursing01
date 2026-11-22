@@ -26,8 +26,9 @@ import './VideoStage.css';
  * @param remoteLabel  ชื่อที่แสดงบนภาพคู่สนทนา
  * @param children     overlay (กำลังรอ/ข้อผิดพลาด ฯลฯ) วางทับพื้นที่วิดีโอ
  * @param controls     ปุ่มควบคุมวิดีโอคอล (กล้อง, ไมค์, แชท, วางสาย) - แสดงในโหมดเต็มจอ
+ * @param panel        แผงลอย (แบบสอบถาม/แชท) - แสดงในโหมดเต็มจอ
  */
-export default function VideoStage({ call, remoteLabel = 'คู่สนทนา', children, controls }) {
+export default function VideoStage({ call, remoteLabel = 'คู่สนทนา', children, controls, panel }) {
   const { layout, size, setLayout, growSelf, shrinkSelf, canGrow, canShrink } = useVideoLayout();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const stageRef = useRef(null);
@@ -119,10 +120,26 @@ export default function VideoStage({ call, remoteLabel = 'คู่สนทน�
         )}
       </div>
 
-      {/* ปุ่มควบคุมวิดีโอคอล - แสดงในโหมดเต็มจอ */}
-      {controls && isFullscreen && (
+      {/* ปุ่มควบคุมในโหมดเต็มจอ */}
+      {isFullscreen && (
         <div className="vs-controls-fullscreen">
+          <button
+            type="button"
+            className="vs-exit-fullscreen-btn"
+            onClick={toggleFullscreen}
+            title="ออกจากโหมดเต็มจอ"
+          >
+            <ExitFullscreenIcon size={20} />
+            <span className="vs-btn-text"> ออกจากเต็มจอ</span>
+          </button>
           {controls}
+        </div>
+      )}
+
+      {/* แผงลอยในโหมดเต็มจอ */}
+      {isFullscreen && panel && (
+        <div className="vs-panel-fullscreen">
+          {panel}
         </div>
       )}
 
