@@ -1,9 +1,9 @@
 import { env } from '../config/env.js';
 
 /**
- * mail.service.js — ส่งอีเมล OTP ผ่าน SMTP (ใช้ได้กับผู้ให้บริการทั่วไป เช่น Brevo, Resend SMTP, Mailgun, SES, Gmail App Password)
- * โหลด nodemailer แบบ lazy (เหมือน push.service.js) เพื่อไม่ให้เทสต์/โหมดพัฒนาพังถ้ายังไม่ได้ติดตั้งหรือยังไม่ตั้งค่า
- * ติดตั้ง: npm install nodemailer   (ในโฟลเดอร์ Backend เพื่ออัปเดต package-lock.json ด้วย)
+- mail.service.js — ส่งอีเมล OTP ผ่าน SMTP (ใช้ได้กับผู้ให้บริการทั่วไป เช่น Brevo, Resend SMTP, Mailgun, SES, Gmail App Password)
+- โหลด nodemailer แบบ lazy (เหมือน push.service.js) เพื่อไม่ให้เทสต์/โหมดพัฒนาพังถ้ายังไม่ได้ติดตั้งหรือยังไม่ตั้งค่า
+- ติดตั้ง: npm install nodemailer   (ในโฟลเดอร์ Backend เพื่ออัปเดต package-lock.json ด้วย)
  */
 export const isMailConfigured = () => !!(env.MAIL_HOST && env.MAIL_USER && env.MAIL_PASS && env.MAIL_FROM);
 
@@ -17,6 +17,9 @@ function getTransporter() {
         port: env.MAIL_PORT,
         secure: env.MAIL_SECURE,
         auth: { user: env.MAIL_USER, pass: env.MAIL_PASS },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
       });
     });
     transporterPromise.catch(() => { transporterPromise = null; }); // ลองใหม่ได้ในครั้งถัดไป
