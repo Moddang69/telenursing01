@@ -9,7 +9,15 @@ import { VIDEO_CALL_STATE } from '../../constants/statuses.js';
 import { mapsUrl } from '../../utils/geolocation.js';
 import ChatPanel from '../../components/common/ChatPanel.jsx';
 import VideoStage from '../../components/video/VideoStage.jsx';
-import SlashIcon from '../../components/video/SlashIcon.jsx';
+import {
+  CameraIcon,
+  CameraOffIcon,
+  MicIcon,
+  MicOffIcon,
+  ChatIcon,
+  PhoneOffIcon,
+  ClipboardIcon,
+} from '../../components/video/VideoIcons.jsx';
 import './NurseVideoConsultationPage.css';
 
 // ตัวแปลง Key ภาษาอังกฤษเป็นข้อความภาษาไทย
@@ -131,6 +139,54 @@ export default function NurseVideoConsultationPage() {
 
   const hasCoords = preConsult?.gpsCoordinates?.lat != null && preConsult?.gpsCoordinates?.lng != null;
 
+  // ปุ่มควบคุมวิดีโอคอล - ใช้ทั้งโหมดปกติและโหมดเต็มจอ
+  const videoControls = (
+    <>
+      <button
+        className={`control-btn ${!call.cameraOn ? 'off' : ''}`}
+        onClick={call.toggleCamera}
+        aria-label={call.cameraOn ? 'ปิดกล้อง' : 'เปิดกล้อง'}
+      >
+        {call.cameraOn ? <CameraIcon size={24} /> : <CameraOffIcon size={24} />}
+        <span className="control-btn-text">{call.cameraOn ? 'กล้อง' : 'ปิดกล้อง'}</span>
+      </button>
+      <button
+        className={`control-btn ${!call.micOn ? 'off' : ''}`}
+        onClick={call.toggleMic}
+        aria-label={call.micOn ? 'ปิดไมค์' : 'เปิดไมค์'}
+      >
+        {call.micOn ? <MicIcon size={24} /> : <MicOffIcon size={24} />}
+        <span className="control-btn-text">{call.micOn ? 'ไมค์' : 'ปิดไมค์'}</span>
+      </button>
+      <button
+        className={`control-btn ${panel === 'info' ? 'active' : ''}`}
+        onClick={() => togglePanel('info')}
+        aria-expanded={panel === 'info'}
+        aria-label={INFO_TITLE}
+        title={INFO_TITLE}
+      >
+        <ClipboardIcon size={24} />
+        <span className="control-btn-text">แบบสอบถาม/บันทึก</span>
+      </button>
+      <button
+        className={`control-btn control-btn-badge ${panel === 'chat' ? 'active' : ''}`}
+        onClick={() => togglePanel('chat')}
+        aria-expanded={panel === 'chat'}
+        aria-label={chatUnread > 0 ? `แชท (${chatUnread} ข้อความที่ยังไม่ได้อ่าน)` : 'แชท'}
+      >
+        <ChatIcon size={24} />
+        <span className="control-btn-text">แชท</span>
+        {chatUnread > 0 && panel !== 'chat' && (
+          <span className="control-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
+        )}
+      </button>
+      <button className="control-btn danger" onClick={handleEndCall} disabled={finishing || leaving}>
+        <PhoneOffIcon size={24} />
+        <span className="control-btn-text">{call.wasConnected ? 'จบการปรึกษา' : 'ออกจากห้อง'}</span>
+      </button>
+    </>
+  );
+
   return (
     <div className="nurse-video-page">
       <div className="nurse-video-main">
@@ -139,7 +195,7 @@ export default function NurseVideoConsultationPage() {
           {stateLabel[call.state]}
         </div>
 
-        <VideoStage call={call} remoteLabel={patient?.name || 'ผู้ป่วย'}>
+        <VideoStage call={call} remoteLabel={patient?.name || 'ผู้ป่วย'} controls={videoControls}>
           {lookupDone && !appointmentId ? (
             <div className="agora-overlay">
               <p>⚠️ ไม่พบนัดหมายของผู้ป่วยรายนี้ที่เข้าห้องได้ตอนนี้ กรุณาสร้างนัดหมายก่อนเริ่มวิดีโอคอล</p>
@@ -244,43 +300,7 @@ export default function NurseVideoConsultationPage() {
         )}
 
         <div className="video-controls">
-          <button
-            className={`control-btn ${!call.cameraOn ? 'off' : ''}`}
-            onClick={call.toggleCamera}
-            aria-label={call.cameraOn ? 'ปิดกล้อง' : 'เปิดกล้อง'}
-          >
-            <SlashIcon icon="📷" off={!call.cameraOn} /> {call.cameraOn ? 'กล้อง' : 'ปิดกล้อง'}
-          </button>
-          <button
-            className={`control-btn ${!call.micOn ? 'off' : ''}`}
-            onClick={call.toggleMic}
-            aria-label={call.micOn ? 'ปิดไมค์' : 'เปิดไมค์'}
-          >
-            <SlashIcon icon="🎙️" off={!call.micOn} /> {call.micOn ? 'ไมค์' : 'ปิดไมค์'}
-          </button>
-          <button
-            className={`control-btn ${panel === 'info' ? 'active' : ''}`}
-            onClick={() => togglePanel('info')}
-            aria-expanded={panel === 'info'}
-            aria-label={INFO_TITLE}
-            title={INFO_TITLE}
-          >
-            📋 <span className="ctl-text">แบบสอบถาม/บันทึก</span>
-          </button>
-          <button
-            className={`control-btn control-btn-badge ${panel === 'chat' ? 'active' : ''}`}
-            onClick={() => togglePanel('chat')}
-            aria-expanded={panel === 'chat'}
-            aria-label={chatUnread > 0 ? `แชท (${chatUnread} ข้อความที่ยังไม่ได้อ่าน)` : 'แชท'}
-          >
-            💬 แชท
-            {chatUnread > 0 && panel !== 'chat' && (
-              <span className="control-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
-            )}
-          </button>
-          <button className="control-btn danger" onClick={handleEndCall} disabled={finishing || leaving}>
-            {call.wasConnected ? '📴 จบการปรึกษา' : '🚪 ออกจากห้อง'}
-          </button>
+          {videoControls}
         </div>
       </div>
     </div>

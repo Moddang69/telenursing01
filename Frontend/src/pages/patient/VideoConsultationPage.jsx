@@ -6,7 +6,14 @@ import { useChatUnread } from '../../hooks/useChatUnread.js';
 import { VIDEO_CALL_STATE } from '../../constants/statuses.js';
 import ChatPanel from '../../components/common/ChatPanel.jsx';
 import VideoStage from '../../components/video/VideoStage.jsx';
-import SlashIcon from '../../components/video/SlashIcon.jsx';
+import {
+  CameraIcon,
+  CameraOffIcon,
+  MicIcon,
+  MicOffIcon,
+  ChatIcon,
+  PhoneOffIcon,
+} from '../../components/video/VideoIcons.jsx';
 import videoCallService from '../../services/videoCallService.js';
 import './VideoConsultationPage.css';
 
@@ -101,6 +108,29 @@ export default function VideoConsultationPage() {
 
   const showWaiting = call.state === VIDEO_CALL_STATE.WAITING_FOR_NURSE;
 
+  // ปุ่มควบคุมวิดีโอคอล - ใช้ทั้งโหมดปกติและโหมดเต็มจอ
+  const videoControls = (
+    <>
+      <button className={`control-btn ${!call.cameraOn ? 'off' : ''}`} onClick={call.toggleCamera}>
+        {call.cameraOn ? <CameraIcon size={24} /> : <CameraOffIcon size={24} />}
+        <span className="control-btn-text">{call.cameraOn ? 'กล้อง' : 'ปิดกล้อง'}</span>
+      </button>
+      <button className={`control-btn ${!call.micOn ? 'off' : ''}`} onClick={call.toggleMic}>
+        {call.micOn ? <MicIcon size={24} /> : <MicOffIcon size={24} />}
+        <span className="control-btn-text">{call.micOn ? 'ไมค์' : 'ปิดไมค์'}</span>
+      </button>
+      <button className="control-btn control-btn-badge" onClick={() => setShowChat((s) => !s)}>
+        <ChatIcon size={24} />
+        <span className="control-btn-text">แชท</span>
+        {chatUnread > 0 && !showChat && <span className="control-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}
+      </button>
+      <button className="control-btn danger" onClick={handleEndCall} disabled={ending}>
+        <PhoneOffIcon size={24} />
+        <span className="control-btn-text">วางสาย</span>
+      </button>
+    </>
+  );
+
   return (
     <div className="video-page">
       <div className="video-status-bar" aria-live="polite">
@@ -108,7 +138,7 @@ export default function VideoConsultationPage() {
         {stateLabel[call.state]}
       </div>
 
-      <VideoStage call={call} remoteLabel="พยาบาล">
+      <VideoStage call={call} remoteLabel="พยาบาล" controls={videoControls}>
         {call.error ? (
           <div className="agora-overlay">
             <div className="wait-timeout-box">
@@ -150,19 +180,7 @@ export default function VideoConsultationPage() {
       )}
 
       <div className="video-controls">
-        <button className={`control-btn ${!call.cameraOn ? 'off' : ''}`} onClick={call.toggleCamera}>
-          <SlashIcon icon="📷" off={!call.cameraOn} /> {call.cameraOn ? 'กล้อง' : 'ปิดกล้อง'}
-        </button>
-        <button className={`control-btn ${!call.micOn ? 'off' : ''}`} onClick={call.toggleMic}>
-          <SlashIcon icon="🎙️" off={!call.micOn} /> {call.micOn ? 'ไมค์' : 'ปิดไมค์'}
-        </button>
-        <button className="control-btn control-btn-badge" onClick={() => setShowChat((s) => !s)}>
-          💬 แชท
-          {chatUnread > 0 && !showChat && <span className="control-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}
-        </button>
-        <button className="control-btn danger" onClick={handleEndCall} disabled={ending}>
-          📴 วางสาย
-        </button>
+        {videoControls}
       </div>
     </div>
   );
