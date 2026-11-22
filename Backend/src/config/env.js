@@ -40,6 +40,9 @@ export const env = {
   // แชท: แสดงตัวอย่างข้อความ (ตัด 80 ตัวอักษร) ในการแจ้งเตือนบนหน้าจอล็อกหรือไม่ — ตั้ง CHAT_PUSH_PREVIEW=false เพื่อซ่อนเนื้อหา (แสดงแค่ "ส่งข้อความใหม่ถึงคุณ")
   // แนะนำให้ปิดถ้าอุปกรณ์อาจถูกใช้ร่วมกันหลายคน (ข้อมูลสุขภาพเป็นข้อมูลอ่อนไหว)
   CHAT_PUSH_PREVIEW: process.env.CHAT_PUSH_PREVIEW !== 'false',
+  // อีเมลส่ง OTP (Brevo API) — บังคับตั้งค่าเมื่อ NODE_ENV=production (ดูด้านล่าง)
+  BREVO_API_KEY: process.env.BREVO_API_KEY || '',
+  MAIL_FROM_EMAIL: process.env.MAIL_FROM_EMAIL || '', // ต้องเป็นอีเมลที่ยืนยันใน Brevo
   // อายุการเก็บข้อมูล (Data Retention) — ตัวตั้งเวลาลบข้อมูลที่หมดอายุอัตโนมัติ (ดู constants/retention.js)
   // ปิดได้ด้วย RETENTION_PURGE_ENABLED=false / ปรับความถี่ด้วย RETENTION_PURGE_INTERVAL_MINUTES (ค่าเริ่มต้น 60 นาที)
   // ปรับจำนวนวันรายประเภทได้ด้วย RETENTION_DAYS_<ชื่อโมเดลแบบ SNAKE_CASE> เช่น RETENTION_DAYS_HEALTH_RECORD=60
@@ -52,7 +55,17 @@ export const env = {
   MAIL_FROM: process.env.MAIL_FROM || '', // เช่น "TeleNursing <no-reply@yourdomain.com>"
   RETENTION_PURGE_ENABLED: process.env.RETENTION_PURGE_ENABLED !== 'false',
   RETENTION_PURGE_INTERVAL_MINUTES: Number(process.env.RETENTION_PURGE_INTERVAL_MINUTES) || 60,
+
 };
+
+// ตรวจสอบค่าบังคับเมื่อ NODE_ENV === 'production'
+if (env.NODE_ENV === 'production') {
+  const hasBrevo = env.BREVO_API_KEY && env.MAIL_FROM_EMAIL;
+  const hasSmtp = env.MAIL_HOST && env.MAIL_USER && env.MAIL_PASS && env.MAIL_FROM;
+  if (!hasBrevo && !hasSmtp) {
+    throw new Error('[ENV ERROR] ต้องตั้งค่า BREVO_API_KEY / MAIL_FROM_EMAIL หรือ MAIL_HOST / MAIL_USER / MAIL_PASS / MAIL_FROM สำหรับส่ง OTP ทางอีเมล');
+  }
+}
 
 // ---------- ตรวจความพร้อมสำหรับ Production (Fail Fast) ----------
 if (env.NODE_ENV === 'production') {
