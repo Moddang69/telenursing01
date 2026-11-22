@@ -61,11 +61,21 @@ export const nurseService = {
     return normalizePatient(res.data);
   },
 
-  // แบบสอบถามก่อนพบพยาบาลของนัดหมายล่าสุดที่ผู้ป่วยกรอกแล้ว (ฝังอยู่ใน Appointment.preConsult)
+  // แบบสอบถามก่อนพบพยาบาลของนัดหมายปัจจุบัน (ฝังอยู่ใน Appointment.preConsult)
+  // ดึงจากนัดหมายที่ join ได้ตอนนี้ (status ยังไม่เสร็จสิ้น) ไม่ใช่จากนัดหมายเก่า
   async getPreConsultAnswers(patientId) {
     const res = await apiClient.get(`/appointments/${patientId}`);
-    const withAnswers = (res.data || []).find((a) => a.preConsult?.submittedAt);
-    return withAnswers ? withAnswers.preConsult : null;
+    const now = Date.now();
+    const graceMs = 60 * 60 * 1000; // 60 นาที
+    const joinableStatuses = ['SCHEDULED', 'WAITING', 'PATIENT_JOINED', 'NURSE_JOINED', 'IN_CONSULTATION'];
+
+    // หานัดหมายปัจจุบันที่มี preConsult และยังมีสถานะที่เข้าห้องได้
+    const currentAppointment = (res.data || [])
+      .filter((a) => joinableStatuses.includes(a.status) && a.preConsult?.submittedAt)
+      .filter((a) => new Date(a.dueDateTime).getTime() >= now - graceMs)
+      .sort((a, b) => new Date(a.dueDateTime) - new Date(b.dueDateTime))[0];
+
+    return currentAppointment?.preConsult || null;
   },
 
   async getDashboardSummary() {

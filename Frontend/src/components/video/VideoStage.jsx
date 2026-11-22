@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { useVideoLayout } from '../../hooks/useVideoLayout.js';
 import SlashIcon from './SlashIcon.jsx';
 import './VideoStage.css';
@@ -14,6 +14,28 @@ import './VideoStage.css';
  */
 export default function VideoStage({ call, remoteLabel = 'คู่สนทนา', children }) {
   const { layout, size, setLayout, growSelf, shrinkSelf, canGrow, canShrink } = useVideoLayout();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  // ติดตามการเปลี่ยนแปลง fullscreen state
+  React.useEffect(() => {
+    const handleChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
+  }, []);
 
   return (
     <div className={`vs-stage vs-${layout} vs-size-${size}`}>
@@ -57,6 +79,14 @@ export default function VideoStage({ call, remoteLabel = 'คู่สนทน�
           title="หน้าจอคู่ ขนาดเท่ากัน (บน-ล่าง)"
         >
           ◫<span className="vs-btn-text"> หน้าจอคู่</span>
+        </button>
+        <button
+          type="button"
+          className={isFullscreen ? 'active' : ''}
+          onClick={toggleFullscreen}
+          title={isFullscreen ? 'ออกจากโหมดเต็มจอ' : 'โหมดเต็มจอ'}
+        >
+          {isFullscreen ? '⊡' : '⛶'}<span className="vs-btn-text"> {isFullscreen ? 'ออกจากเต็มจอ' : 'เต็มจอ'}</span>
         </button>
 
         {layout === 'pip' && (
