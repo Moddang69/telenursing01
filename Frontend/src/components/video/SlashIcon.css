@@ -1,0 +1,7 @@
+/* src/components/video/SlashIcon.css — ขีดทับอิโมจิเมื่อปิดกล้อง/ไมค์ */
+.slash-icon { position: relative; display: inline-block; line-height: 1; }
+.slash-icon.is-off::after {
+  content: ''; position: absolute; left: -3px; right: -3px; top: 50%; height: 3px; margin-top: -1.5px;
+  background: #ff3b30; border-radius: 2px; transform: rotate(-45deg);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9); /* ขอบขาว ให้เห็นชัดทั้งพื้นมืดและพื้นแดง */
+}

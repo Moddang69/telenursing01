@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Video, Camera, Mic, ClipboardList, MessageCircle, PhoneOff, LogOut, MapPin, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useAgoraCall } from '../../hooks/useAgoraCall.js';
 import { useChatUnread } from '../../hooks/useChatUnread.js';
@@ -10,6 +9,7 @@ import { VIDEO_CALL_STATE } from '../../constants/statuses.js';
 import { mapsUrl } from '../../utils/geolocation.js';
 import ChatPanel from '../../components/common/ChatPanel.jsx';
 import VideoStage from '../../components/video/VideoStage.jsx';
+import SlashIcon from '../../components/video/SlashIcon.jsx';
 import './NurseVideoConsultationPage.css';
 
 // ตัวแปลง Key ภาษาอังกฤษเป็นข้อความภาษาไทย
@@ -55,7 +55,6 @@ export default function NurseVideoConsultationPage() {
   const [lookupDone, setLookupDone] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     nurseService.getPatientDetail(patientId).then(setPatient);
@@ -63,24 +62,15 @@ export default function NurseVideoConsultationPage() {
   }, [patientId]);
 
   // หานัดหมายของผู้ป่วยรายนี้ที่ผูกกับพยาบาลคนนี้ → ใช้เป็นห้อง Agora (ตรงกับที่ฝั่งผู้ป่วยเลือก)
-  // re-fetch เมื่อ refreshKey เปลี่ยน (หลัง rejoin) เพื่อให้ได้นัดหมายที่ valid
   useEffect(() => {
-    setLookupDone(false);
     videoCallService
       .findJoinableAppointment(patientId)
       .then((apt) => setAppointmentId(apt?.id || null))
-      .catch((err) => {
-        console.error('findJoinableAppointment failed:', err);
-      })
+      .catch(() => {})
       .finally(() => setLookupDone(true));
-  }, [patientId, refreshKey]);
+  }, [patientId]);
 
-  // callback สำหรับ useAgoraCall → trigger re-fetch appointmentId เมื่อ rejoin
-  const handleRejoin = useCallback(() => {
-    setRefreshKey((k) => k + 1);
-  }, []);
-
-  const call = useAgoraCall({ appointmentId, onRejoin: handleRejoin });
+  const call = useAgoraCall({ appointmentId });
   const chatUnread = useChatUnread({ patientId, userId: user?.id, onChatPage: panel === 'chat' });
 
   const remoteEnded = call.state === VIDEO_CALL_STATE.CALL_ENDED && !finishing;
@@ -130,7 +120,7 @@ export default function NurseVideoConsultationPage() {
         <h1>ออกจากห้องวิดีโอคอลแล้ว</h1>
         <p>ยังไม่ได้เริ่มการปรึกษากับผู้ป่วย (ผู้ป่วยยังไม่ได้เข้าร่วม) นัดหมายยังไม่เสร็จสิ้น ท่านสามารถเข้าร่วมวิดีโอคอลใหม่ได้</p>
         <button className="btn-primary btn-large" onClick={call.rejoin}>
-          <Video size={18} className="inline-icon" /> เข้าร่วมวิดีโอคอลอีกครั้ง
+          🎥 เข้าร่วมวิดีโอคอลอีกครั้ง
         </button>
         <button className="btn-secondary" onClick={() => navigate(`/nurse/patients/${patientId}`)}>
           กลับหน้าผู้ป่วย
@@ -152,11 +142,11 @@ export default function NurseVideoConsultationPage() {
         <VideoStage call={call} remoteLabel={patient?.name || 'ผู้ป่วย'}>
           {lookupDone && !appointmentId ? (
             <div className="agora-overlay">
-              <p><AlertTriangle size={16} className="inline-icon" /> ไม่พบนัดหมายของผู้ป่วยรายนี้ที่เข้าห้องได้ตอนนี้ กรุณาสร้างนัดหมายก่อนเริ่มวิดีโอคอล</p>
+              <p>⚠️ ไม่พบนัดหมายของผู้ป่วยรายนี้ที่เข้าห้องได้ตอนนี้ กรุณาสร้างนัดหมายก่อนเริ่มวิดีโอคอล</p>
             </div>
           ) : call.error ? (
             <div className="agora-overlay">
-              <p><AlertTriangle size={16} className="inline-icon" /> {call.error}</p>
+              <p>⚠️ {call.error}</p>
             </div>
           ) : remoteEnded ? (
             <div className="agora-overlay">
@@ -189,7 +179,7 @@ export default function NurseVideoConsultationPage() {
             aria-label={panel === 'info' ? INFO_TITLE : 'แชท'}
           >
             <div className="nurse-video-panel-head">
-              <span>{panel === 'info' ? INFO_TITLE : <><MessageCircle size={18} /> แชทกับผู้ป่วย</>}</span>
+              <span>{panel === 'info' ? INFO_TITLE : '💬 แชทกับผู้ป่วย'}</span>
               <button
                 type="button"
                 className="nurse-video-panel-close"
@@ -223,7 +213,7 @@ export default function NurseVideoConsultationPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <MapPin size={14} className="inline-icon" /> เปิดแผนที่
+                              📍 เปิดแผนที่
                             </a>
                           </>
                         )}
@@ -259,14 +249,14 @@ export default function NurseVideoConsultationPage() {
             onClick={call.toggleCamera}
             aria-label={call.cameraOn ? 'ปิดกล้อง' : 'เปิดกล้อง'}
           >
-            {call.cameraOn ? <><Camera size={18} /> กล้อง</> : <><Camera size={18} /> ปิดกล้อง</>}
+            <SlashIcon icon="📷" off={!call.cameraOn} /> {call.cameraOn ? 'กล้อง' : 'ปิดกล้อง'}
           </button>
           <button
             className={`control-btn ${!call.micOn ? 'off' : ''}`}
             onClick={call.toggleMic}
             aria-label={call.micOn ? 'ปิดไมค์' : 'เปิดไมค์'}
           >
-            {call.micOn ? <><Mic size={18} /> ไมค์</> : <><Mic size={18} /> ปิดไมค์</>}
+            <SlashIcon icon="🎙️" off={!call.micOn} /> {call.micOn ? 'ไมค์' : 'ปิดไมค์'}
           </button>
           <button
             className={`control-btn ${panel === 'info' ? 'active' : ''}`}
@@ -275,7 +265,7 @@ export default function NurseVideoConsultationPage() {
             aria-label={INFO_TITLE}
             title={INFO_TITLE}
           >
-            <ClipboardList size={18} /> <span className="ctl-text">แบบสอบถาม/บันทึก</span>
+            📋 <span className="ctl-text">แบบสอบถาม/บันทึก</span>
           </button>
           <button
             className={`control-btn control-btn-badge ${panel === 'chat' ? 'active' : ''}`}
@@ -283,13 +273,13 @@ export default function NurseVideoConsultationPage() {
             aria-expanded={panel === 'chat'}
             aria-label={chatUnread > 0 ? `แชท (${chatUnread} ข้อความที่ยังไม่ได้อ่าน)` : 'แชท'}
           >
-            <MessageCircle size={18} /> แชท
+            💬 แชท
             {chatUnread > 0 && panel !== 'chat' && (
               <span className="control-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>
             )}
           </button>
           <button className="control-btn danger" onClick={handleEndCall} disabled={finishing || leaving}>
-            {call.wasConnected ? <><PhoneOff size={18} /> จบการปรึกษา</> : <><LogOut size={18} /> ออกจากห้อง</>}
+            {call.wasConnected ? '📴 จบการปรึกษา' : '🚪 ออกจากห้อง'}
           </button>
         </div>
       </div>
